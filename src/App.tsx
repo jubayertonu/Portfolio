@@ -4,60 +4,50 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence, useScroll, useSpring } from "motion/react";
 import { 
   FileText, 
-  X, 
   Mail, 
   Phone, 
   MapPin, 
   Award, 
   ArrowUpRight, 
-  Menu,
-  CheckCircle,
-  Loader2,
+  GraduationCap, 
+  Briefcase, 
+  ShieldCheck, 
+  Linkedin, 
+  MessageCircle, 
+  Copy, 
+  Check,
   Send,
-  Briefcase,
-  GraduationCap,
-  ShieldCheck,
-  AlertTriangle,
-  Calendar,
-  ChevronRight,
   User,
-  MessageSquare,
-  Linkedin,
-  MessageCircle,
-  Copy,
-  Check
+  CheckCircle2,
+  Menu,
+  X,
+  Download
 } from "lucide-react";
-import { TypingText } from "./components/TypingText";
-import { WshRadarChart } from "./components/WshRadarChart";
 
 export default function App() {
-  const [activeView, setActiveView] = useState<"hero" | "about" | "resume" | "certs" | "contact">("hero");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [hoveredSkillIndex, setHoveredSkillIndex] = useState<number | null>(null);
   const [certFilter, setCertFilter] = useState<"all" | "lifetime" | "valid" | "expiring">("all");
   const [copiedText, setCopiedText] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [inquiryType, setInquiryType] = useState<"hiring" | "audits" | "drills">("hiring");
+  const [lastSubmittedData, setLastSubmittedData] = useState({ name: "", email: "", message: "", type: "hiring" });
 
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 24,
-    restDelta: 0.001
-  });
+  const cvUrl = "https://res-console.cloudinary.com/dqtyuf02y/thumbnails/v1/image/upload/v1784887403/S2F6aV9Ub251X1VwZGF0ZWRfRm9ybWF0X0NWLnBkZl8yMDI2MDcwN18wMTE1NTZfMDAwMC5wZGZfMjAyNjA3MTNfMjM0NDQwXzAwMDBfcW9zczJo/as_is/Kazi_Tonu_Updated_Format_CV.pdf_20260707_011556_0000.pdf_20260713_234440_0000_qoss2h";
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const handleDownloadCV = () => {
+    window.open(cvUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const aboutSkills = [
+    { label: "WSH & MOM COMPLIANCE", percentage: 98 },
+    { label: "RISK ASSESSMENT (HIRA)", percentage: 95 },
+    { label: "HIGH-RISK SUPERVISION", percentage: 92 },
+    { label: "SAFETY AUDITS & DRILLS", percentage: 90 },
+    { label: "INCIDENT INVESTIGATION", percentage: 88 },
+  ];
 
   const handleCopyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -65,317 +55,36 @@ export default function App() {
     setTimeout(() => setCopiedText(""), 2000);
   };
 
-  useEffect(() => {
-    if (isLoading) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isLoading]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLoadingProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 450);
-          return 100;
-        }
-        const step = Math.floor(Math.random() * 8) + 4;
-        return Math.min(prev + step, 100);
-      });
-    }, 85 + Math.random() * 50);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const navItems = [
-    { label: "Home", value: "hero" },
-    { label: "About", value: "about" },
-    { label: "Career Progression", value: "resume" },
-    { label: "Certs and Licenses", value: "certs" },
-    { label: "Contact", value: "contact" }
-  ];
-
-  const getValidityDetails = (expiryDate: string | null) => {
-    if (!expiryDate) {
-      return {
-        status: "lifetime" as const,
-        percent: 100,
-        labelText: "Unlimited • No Expiry",
-        daysLeft: null,
-        badgeColor: "bg-emerald-500/10 text-[#41B3A3] border-[#41B3A3]/20",
-        barColor: "bg-[#41B3A3]",
-        shadowColor: "shadow-[#41B3A3]/20",
-        pulse: false,
-      };
-    }
-    const today = new Date("2026-06-11");
-    const expiry = new Date(expiryDate);
-    const diffMs = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 0) {
-      return {
-        status: "expired" as const,
-        percent: 0,
-        labelText: "Expired / Needs Renewal",
-        daysLeft: diffDays,
-        badgeColor: "bg-red-500/10 text-red-400 border-red-500/20",
-        barColor: "bg-red-500",
-        shadowColor: "shadow-red-500/30",
-        pulse: false,
-      };
-    }
-
-    const totalDuration = 1095; 
-    const percent = Math.min(100, Math.max(10, (diffDays / totalDuration) * 100));
-    
-    if (diffDays <= 60) {
-      return {
-        status: "expiring" as const,
-        percent,
-        labelText: `${diffDays} Days Left (Renew Soon)`,
-        daysLeft: diffDays,
-        badgeColor: "bg-amber-500/15 text-amber-500 border-amber-500/30 animate-pulse",
-        barColor: "bg-amber-500",
-        shadowColor: "shadow-amber-500/40",
-        pulse: true,
-      };
-    }
-
-    return {
-      status: "valid" as const,
-      percent,
-      labelText: `${diffDays} Days Left`,
-      daysLeft: diffDays,
-      badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      barColor: "bg-emerald-500",
-      shadowColor: "shadow-emerald-500/20",
-      pulse: false,
-    };
-  };
-
-  const certificationsList = [
-    {
-      title: "Advanced Certificate in Workplace Safety and Health",
-      authority: "Greensafe International PTE LTD",
-      code: "GS-WSH-ADV-9021",
-      date: "Issued 2023",
-      description: "Comprehensive qualification mapping safety standards, advanced compliance management rules, and construction safety control systems.",
-      color: "#41B3A3",
-      expiryDate: null
-    },
-    {
-      title: "Develop a Risk Management Implementation Plan (BizSAFE2)",
-      authority: "Greensafe International PTE LTD",
-      code: "GS-BIZSAFE-2-88219",
-      date: "Issued 2023",
-      description: "Focused training on risk prevention, forming dynamic risk matrices, and drafting compliance-proof bizSAFE hazard actions.",
-      color: "#41B3A3",
-      expiryDate: null
-    },
-    {
-      title: "Workplace Safety and Health Management in Construction Industry",
-      authority: "Eversafe Academy PTE LTD",
-      code: "EV-WAH-CON-4712",
-      date: "Issued 2023",
-      description: "Construction-specific regulations training covering active operations, heavy load staging, and field hazard isolation controls.",
-      color: "#41B3A3",
-      expiryDate: null
-    },
-    {
-      title: "Manage Work at Height",
-      authority: "Eversafe Academy PTE LTD",
-      code: "EV-WAH-MAN-3382",
-      date: "Issued 2023",
-      description: "Specialized training for supervising elevated locations, implementing solid fall containment, protective setups, and MOM guidelines.",
-      color: "#41B3A3",
-      expiryDate: null
-    },
-    {
-      title: "Operate BoomLift",
-      authority: "AAT Training Hub PTE LTD",
-      code: "AAT-BOOM-OP-2241",
-      date: "Issued 2023",
-      description: "Core heavy hydraulics license to navigate high aerial lifts, boom stability controls, safety harnesses, and field operation safety.",
-      color: "#41B3A3",
-      expiryDate: "2028-05-14"
-    },
-    {
-      title: "Perform Work in Confined Space Operation",
-      authority: "Eversafe Academy PTE LTD",
-      code: "EV-CSO-PERF-97103",
-      date: "Issued 2023",
-      description: "Gas assessment, toxic ventilation monitoring, closed workspace logging, and rapid extraction emergency logistics.",
-      color: "#41B3A3",
-      expiryDate: "2027-08-17"
-    },
-    {
-      title: "Standard First Aid Provider",
-      authority: "Singapore Red Cross",
-      code: "RC-SFA-PROV-1184",
-      date: "Issued 2023",
-      description: "Certified trauma first-aid, immediate medical response, CPR/AED coordination, and incident triage on active sites.",
-      color: "#41B3A3",
-      expiryDate: "2026-07-27"
-    },
-    {
-      title: "Psychological First Aid & Befriender Training",
-      authority: "Singapore Red Cross",
-      code: "RC-PFA-BEF-5582",
-      date: "Issued 2023",
-      description: "Workplace crisis intervention, peer support systems, and active safety culture promotion centered on psychological wellbeing.",
-      color: "#41B3A3",
-      expiryDate: "2026-07-27"
-    },
-    {
-      title: "Introduction to OSHA: Safety Standards and Compliance",
-      authority: "Coursera",
-      code: "CS-OSHA-COMP",
-      date: "Issued 2024",
-      description: "Foundational training in OSHA safety standards, hazard identification, and regulatory compliance frameworks.",
-      color: "#41B3A3",
-      expiryDate: null
-    },
-    {
-      title: "Psychological Safety",
-      authority: "Coursera",
-      code: "CS-PSYCH-SAFE",
-      date: "Issued 2024",
-      description: "Frameworks for building open, secure safety systems, encouraging open communication, and minimizing workplace operational worries.",
-      color: "#41B3A3",
-      expiryDate: null
-    },
-    {
-      title: "Creating a Healthy Culture: Addressing Workplace Bullying",
-      authority: "Coursera",
-      code: "CS-HLTH-CULT",
-      date: "Issued 2024",
-      description: "Strategic approaches to fostering supportive workplace interactions, active anti-bullying pathways, and overall health culture coordination.",
-      color: "#41B3A3",
-      expiryDate: null
-    }
-  ];
-
-  const specializedSkillsList = [
-    {
-      name: "Workplace Safety & Health (WSH) Compliance",
-      percentage: 100,
-      metrics: "Certified WSH Coordinator",
-      description: "Formulating strict compliance pathways adhering directly to Singapore WSH Act and local Ministry of Manpower (MOM) safety regulations.",
-      aspects: ["Singapore WSH Act", "MOM Safety Bylaws", "Regulatory Compliance"]
-    },
-    {
-      name: "Hazard Identification & Risk Assessment (HIRA)",
-      percentage: 100,
-      metrics: "bizSAFE2 Implementation Specialist",
-      description: "Utilizing professional risk assessment techniques to preemptively target operational site gaps and institute fall-containment actions.",
-      aspects: ["HIRA Matrices", "bizSAFE2 Planning", "Site-wide Hazard Audits"]
-    },
-    {
-      name: "Safety Supervision & Field Audits",
-      percentage: 97,
-      metrics: "Active Elevated Site Inspector",
-      description: "Directing high-risk operations including work-at-height, boom lift coordinates, confined spaces, and regular site machinery audits.",
-      aspects: ["Work At Height", "Confined Spaces", "BoomLift Coordination"]
-    },
-    {
-      name: "Incident Investigation & Root Cause Analysis",
-      percentage: 94,
-      metrics: "RCA Investigation Specialist",
-      description: "Evaluating on-site incidents systematically to extract key breakdown layers, draft compliance reporting, and set secure containment logs.",
-      aspects: ["Root Cause Analysis", "Preventative Directives", "Accident Prevention"]
-    },
-    {
-      name: "Training & Toolbox Talk Delivery",
-      percentage: 98,
-      metrics: "150+ Technical Briefings Conducted",
-      description: "Instructing local and diverse multi-cultural crews in safety precautions, harness fittings, chemical/machinery handling sheets, and responder roles.",
-      aspects: ["Daily Toolbox Talks", "Site Drill Management", "Safety Culture Activation"]
-    }
-  ];
-
-  const [animationKey, setAnimationKey] = useState(0);
-  const [animationStyle, setAnimationStyle] = useState(0);
-
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-
-  const [activeResumeTab, setActiveResumeTab] = useState<"experience" | "competencies">("experience");
-  const [selectedRoleIdx, setSelectedRoleIdx] = useState(0);
-
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const subject = `[${inquiryType.toUpperCase()} INQUIRY] From ${formData.name}`;
+    const body = `Name: ${formData.name}\nSender Email: ${formData.email}\nInquiry Type: ${inquiryType}\n\nMessage:\n${formData.message}`;
+
+    setLastSubmittedData({
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+      type: inquiryType
+    });
+
+    // Trigger standard mailto for native/desktop email clients
+    const mailtoUrl = `mailto:tonukazi@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+
     setTimeout(() => {
       setIsSubmitting(false);
       setFormSubmitted(true);
       setFormData({ name: "", email: "", message: "" });
-    }, 1200);
-  };
-
-  useEffect(() => {
-    if (activeView !== "hero") return;
-    const interval = setInterval(() => {
-      setAnimationKey((prev) => prev + 1);
-      setAnimationStyle((prev) => {
-        let nextStyle;
-        do {
-          nextStyle = Math.floor(Math.random() * 6);
-        } while (nextStyle === prev);
-        return nextStyle;
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [activeView]);
-
-  const getInitialVariant = (style: number, element: "g" | "k" | "t" | "sh" | "c") => {
-    switch (style) {
-      case 0:
-        if (element === "g") return { y: 20, opacity: 0, x: 0, scale: 1, rotate: 0 };
-        if (element === "k" || element === "t") return { y: "110%", opacity: 0, x: 0, scale: 1, rotate: 0 };
-        if (element === "sh") return { y: 15, opacity: 0, x: 0, scale: 1, rotate: 0 };
-        return { y: "110%", opacity: 0, x: 0, scale: 1, rotate: 0 };
-      case 1:
-        if (element === "g") return { y: -20, opacity: 0, x: 0, scale: 1, rotate: 0 };
-        if (element === "k" || element === "t") return { y: "-110%", opacity: 0, x: 0, scale: 1, rotate: 0 };
-        if (element === "sh") return { y: -15, opacity: 0, x: 0, scale: 1, rotate: 0 };
-        return { y: "-110%", opacity: 0, x: 0, scale: 1, rotate: 0 };
-      case 2:
-        if (element === "g") return { x: -30, opacity: 0, y: 0, scale: 1, rotate: 0 };
-        if (element === "k" || element === "t") return { x: "-100%", opacity: 0, y: 0, scale: 1, rotate: 0 };
-        if (element === "sh") return { x: -30, opacity: 0, y: 0, scale: 1, rotate: 0 };
-        return { x: "-100%", opacity: 0, y: 0, scale: 1, rotate: 0 };
-      case 3:
-        if (element === "g") return { x: 30, opacity: 0, y: 0, scale: 1, rotate: 0 };
-        if (element === "k" || element === "t") return { x: "100%", opacity: 0, y: 0, scale: 1, rotate: 0 };
-        if (element === "sh") return { x: 30, opacity: 0, y: 0, scale: 1, rotate: 0 };
-        return { x: "100%", opacity: 0, y: 0, scale: 1, rotate: 0 };
-      case 4:
-        if (element === "g") return { scale: 0.8, opacity: 0, x: 0, y: 0, rotate: 0 };
-        if (element === "k" || element === "t") return { scale: 0.85, opacity: 0, x: 0, y: 0, rotate: 0 };
-        if (element === "sh") return { scale: 0.85, opacity: 0, x: 0, y: 0, rotate: 0 };
-        return { scale: 0.85, opacity: 0, x: 0, y: 0, rotate: 0 };
-      case 5:
-        if (element === "g") return { rotate: -4, scale: 0.95, opacity: 0, x: 0, y: 0 };
-        if (element === "k" || element === "t") return { rotate: 3, scale: 0.9, opacity: 0, x: 0, y: 0 };
-        if (element === "sh") return { rotate: -2, scale: 0.95, opacity: 0, x: 0, y: 0 };
-        return { rotate: -3, scale: 0.9, opacity: 0, x: 0, y: 0 };
-      default:
-        return { y: 20, opacity: 0, x: 0, scale: 1, rotate: 0 };
-    }
+    }, 400);
   };
 
   const resumeDetails = {
     name: "Kazi Tonu",
-    title: "Workplace Safety and Health Coordinator",
+    title: "Workplace Safety and Health (WSH) Coordinator",
+    location: "Singapore",
+    status: "Available for Global Placement",
     summary: "Dedicated, MOM-skilled Workplace Safety and Health Coordinator with proactive experience supervising high-risk activities, enforcing Singapore WSH Act compliance, and conducting thorough hazard assessments (HIRA) to maintain zero-incident workplaces in the construction and engineering sectors.",
     experience: [
       {
@@ -408,6 +117,16 @@ export default function App() {
         ]
       }
     ],
+    skills: [
+      "WSH Act & MOM Compliance",
+      "Hazard Mitigation & HIRA",
+      "Safety Audits & Inspections",
+      "Work-at-Height Supervision",
+      "BoomLift & Confined Spaces",
+      "Incident & RCA Investigation",
+      "Toolbox Talks & Briefings",
+      "Crisis Triage & Team Sync"
+    ],
     education: [
       {
         degree: "Bachelor of Business Studies (BBS)",
@@ -427,937 +146,853 @@ export default function App() {
     ]
   };
 
-  const handleNavClick = (val: string) => {
-    setActiveView(val as any);
-    const el = document.getElementById(val);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const getValidityDetails = (expiryDate: string | null) => {
+    if (!expiryDate) {
+      return {
+        status: "lifetime" as const,
+        labelText: "Unlimited • No Expiry",
+        badgeColor: "bg-emerald-950/60 text-emerald-400 border-emerald-800",
+      };
     }
+    const today = new Date("2026-06-11");
+    const expiry = new Date(expiryDate);
+    const diffMs = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) {
+      return {
+        status: "expired" as const,
+        labelText: "Expired / Needs Renewal",
+        badgeColor: "bg-red-950/60 text-red-400 border-red-800",
+      };
+    }
+    
+    if (diffDays <= 60) {
+      return {
+        status: "expiring" as const,
+        labelText: `${diffDays} Days Left (Renew Soon)`,
+        badgeColor: "bg-amber-950/60 text-amber-400 border-amber-800",
+      };
+    }
+
+    return {
+      status: "valid" as const,
+      labelText: `${diffDays} Days Left (Valid until ${expiry.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })})`,
+      badgeColor: "bg-emerald-950/60 text-emerald-400 border-emerald-800",
+    };
   };
+
+  const certificationsList = [
+    {
+      title: "Advanced Certificate in Workplace Safety and Health",
+      authority: "Greensafe International PTE LTD",
+      date: "Issued 2023",
+      description: "Comprehensive qualification mapping safety standards, advanced compliance management rules, and construction safety control systems.",
+      expiryDate: null
+    },
+    {
+      title: "Develop a Risk Management Implementation Plan (BizSAFE2)",
+      authority: "Greensafe International PTE LTD",
+      date: "Issued 2023",
+      description: "Focused training on risk prevention, forming dynamic risk matrices, and drafting compliance-proof bizSAFE hazard actions.",
+      expiryDate: null
+    },
+    {
+      title: "Workplace Safety and Health Management in Construction Industry",
+      authority: "Eversafe Academy PTE LTD",
+      date: "Issued 2023",
+      description: "Construction-specific regulations training covering active operations, heavy load staging, and field hazard isolation controls.",
+      expiryDate: null
+    },
+    {
+      title: "Manage Work at Height",
+      authority: "Eversafe Academy PTE LTD",
+      date: "Issued 2023",
+      description: "Specialized training for supervising elevated locations, implementing solid fall containment, protective setups, and MOM guidelines.",
+      expiryDate: null
+    },
+    {
+      title: "Operate BoomLift",
+      authority: "AAT Training Hub PTE LTD",
+      date: "Issued 2023",
+      description: "Core heavy hydraulics license to navigate high aerial lifts, boom stability controls, safety harnesses, and field operation safety.",
+      expiryDate: "2028-05-14"
+    },
+    {
+      title: "Perform Work in Confined Space Operation",
+      authority: "Eversafe Academy PTE LTD",
+      date: "Issued 2023",
+      description: "Gas assessment, toxic ventilation monitoring, closed workspace logging, and rapid extraction emergency logistics.",
+      expiryDate: "2027-08-17"
+    },
+    {
+      title: "Occupational First Aider",
+      authority: "Eversafe Academy PTE LTD",
+      date: "Issued 2024",
+      description: "Certified occupational first aid responder for industrial & construction sites, emergency CPR/AED resuscitation, trauma management, and workplace casualty triage.",
+      expiryDate: "2028-07-31"
+    },
+    {
+      title: "Introduction to OSHA: Safety Standards and Compliance",
+      authority: "Coursera",
+      date: "Issued 2024",
+      description: "Foundational training in OSHA safety standards, hazard identification, and regulatory compliance frameworks.",
+      expiryDate: null
+    },
+    {
+      title: "Psychological Safety",
+      authority: "Coursera",
+      date: "Issued 2024",
+      description: "Frameworks for building open, secure safety systems, encouraging open communication, and minimizing workplace operational worries.",
+      expiryDate: null
+    },
+    {
+      title: "Creating a Healthy Culture: Addressing Workplace Bullying",
+      authority: "Coursera",
+      date: "Issued 2024",
+      description: "Strategic approaches to fostering supportive workplace interactions, active anti-bullying pathways, and overall health culture coordination.",
+      expiryDate: null
+    },
+    {
+      title: "ILO (International Labour Organisations)",
+      authority: "3S Life Safe Akademie Private Limited",
+      date: "Issued 2024",
+      description: "Comprehensive alignment on core international labour safety and health guidelines, ethical standards, and global worker protection principles.",
+      expiryDate: null
+    },
+    {
+      title: "Safety Coordinator Refresher Training",
+      authority: "SCAL Academy",
+      date: "Issued Jan 2026",
+      description: "Recertification covering critical updates in workplace safety and health coordination, legislative transformations, and accident mitigation.",
+      expiryDate: "2028-01-07"
+    }
+  ];
+
+  const specializedSkillsList = [
+    {
+      name: "Workplace Safety & Health (WSH) Compliance",
+      percentage: "100%",
+      metrics: "Certified WSH Coordinator",
+      description: "Formulating strict compliance pathways adhering directly to Singapore WSH Act and local Ministry of Manpower (MOM) safety regulations.",
+      aspects: ["Singapore WSH Act", "MOM Safety Bylaws", "Regulatory Compliance"]
+    },
+    {
+      name: "Hazard Identification & Risk Assessment (HIRA)",
+      percentage: "100%",
+      metrics: "bizSAFE2 Implementation Specialist",
+      description: "Utilizing professional risk assessment techniques to preemptively target operational site gaps and institute fall-containment actions.",
+      aspects: ["HIRA Matrices", "bizSAFE2 Planning", "Site-wide Hazard Audits"]
+    },
+    {
+      name: "Safety Supervision & Field Audits",
+      percentage: "97%",
+      metrics: "Active Elevated Site Inspector",
+      description: "Directing high-risk operations including work-at-height, boom lift coordinates, confined spaces, and regular site machinery audits.",
+      aspects: ["Work At Height", "Confined Spaces", "BoomLift Coordination"]
+    },
+    {
+      name: "Incident Investigation & Root Cause Analysis",
+      percentage: "94%",
+      metrics: "RCA Investigation Specialist",
+      description: "Evaluating on-site incidents systematically to extract key breakdown layers, draft compliance reporting, and set secure containment logs.",
+      aspects: ["Root Cause Analysis", "Preventative Directives", "Accident Prevention"]
+    },
+    {
+      name: "Training & Toolbox Talk Delivery",
+      percentage: "98%",
+      metrics: "150+ Technical Briefings Conducted",
+      description: "Instructing local and diverse multi-cultural crews in safety precautions, harness fittings, chemical/machinery handling sheets, and responder roles.",
+      aspects: ["Daily Toolbox Talks", "Site Drill Management", "Safety Culture Activation"]
+    }
+  ];
+
+  const filteredCerts = certificationsList.filter((cert) => {
+    const details = getValidityDetails(cert.expiryDate);
+    if (certFilter === "all") return true;
+    if (certFilter === "lifetime") return details.status === "lifetime";
+    if (certFilter === "valid") return details.status === "valid";
+    if (certFilter === "expiring") return details.status === "expiring" || details.status === "expired";
+    return true;
+  });
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("home");
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["hero", "about", "resume", "certs", "contact"];
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      const sections = ["home", "summary", "experience", "certifications", "competencies", "contact"];
+      const scrollPosition = window.scrollY + 180;
 
-      let currentSection = "hero";
-      for (const section of sections) {
-        const el = document.getElementById(section);
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
         if (el) {
           const top = el.offsetTop;
-          if (scrollPosition >= top) {
-            currentSection = section;
+          const height = el.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(sectionId);
+            break;
           }
         }
       }
-      setActiveView(currentSection as any);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+      setActiveSection(id);
+    }
+  };
+
+  const navItems = [
+    { id: "home", label: "HOME" },
+    { id: "summary", label: "ABOUT" },
+    { id: "experience", label: "EXPERIENCE" },
+    { id: "certifications", label: "CERTIFICATIONS" },
+    { id: "competencies", label: "SERVICES" },
+    { id: "contact", label: "CONTACT" },
+  ];
+
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {isLoading && (
-          <motion.div
-            key="portfolio-loader"
-            initial={{ opacity: 1 }}
-            exit={{ 
-              opacity: 0,
-              scale: 1.05,
-              filter: "blur(20px)",
-              transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] }
-            }}
-            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#070707] text-white"
+    <div className="min-h-screen bg-[#181818] text-zinc-100 font-sans antialiased selection:bg-teal-500 selection:text-black">
+      {/* Top Header / Navigation as seen in reference image */}
+      <header className="sticky top-0 z-50 bg-[#181818]/95 backdrop-blur-sm border-b border-zinc-800/60 px-6 lg:px-16 py-5">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo / Brand Name */}
+          <a 
+            href="#home" 
+            onClick={(e) => scrollToSection(e, "home")}
+            className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-0.5 cursor-pointer"
           >
-            <div className="absolute inset-x-0 top-1/4 h-80 bg-[radial-gradient(circle_at_center,rgba(65,179,163,0.07)_0%,transparent_65%)] pointer-events-none" />
+            Tonu<span className="text-[#E83E8C] font-black">.</span>
+          </a>
 
-            <div className="relative flex flex-col items-center max-w-sm px-6 text-center select-none">
-              <div className="relative w-24 h-24 mb-8 flex items-center justify-center">
-                <motion.div 
-                  className="absolute inset-0 border border-dashed border-white/10 rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-                />
-                <motion.div 
-                  className="absolute inset-2 border border-[#41B3A3]/20 rounded-full"
-                  animate={{ scale: [1, 1.06, 1] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                />
-                <motion.div 
-                  className="w-14 h-14 bg-white/[0.02] border border-[#41B3A3]/40 rounded-full flex items-center justify-center text-xl font-black text-white shadow-[0_0_30px_rgba(65,179,163,0.15)] relative"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <span className="relative z-10 text-white tracking-widest pl-0.5">KT</span>
-                  <div className="absolute inset-0 bg-[#41B3A3]/5 rounded-full blur-sm" />
-                </motion.div>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                <h1 className="text-sm font-extrabold tracking-[0.45em] text-white uppercase mb-1.5 pl-[0.45em]">
-                  KAZI TONU
-                </h1>
-                <p className="text-[9px] sm:text-[10px] font-mono tracking-[0.25em] text-[#41B3A3] uppercase mb-10 pl-[0.25em]">
-                  WSH COORDINATOR INTERFACE
-                </p>
-              </motion.div>
-
-              <div className="w-48 sm:w-60 mb-6 flex flex-col items-center">
-                <div className="w-full h-[1.5px] bg-white/5 relative overflow-hidden rounded-full mb-3">
-                  <motion.div 
-                    className="absolute top-0 bottom-0 left-0 bg-[#41B3A3] shadow-[0_0_8px_#41B3A3]"
-                    style={{ width: `${loadingProgress}%` }}
-                    transition={{ ease: "easeOut" }}
-                  />
-                </div>
-                <div className="w-full flex justify-between items-center text-[9px] font-mono text-zinc-500">
-                  <span className="text-[#41B3A3]/80 tracking-wider text-left">
-                    {loadingProgress < 20 && "STAGING_PORTFOLIO_CORE"}
-                    {loadingProgress >= 20 && loadingProgress < 45 && "PARSING_WSH_CREDENTIALS"}
-                    {loadingProgress >= 45 && loadingProgress < 70 && "CACHING_MEDIA_STREAMS"}
-                    {loadingProgress >= 70 && loadingProgress < 90 && "RUNNING_RISK_AUDIT"}
-                    {loadingProgress >= 90 && loadingProgress < 100 && "VERIFYING_COMPLIANCE"}
-                    {loadingProgress === 100 && "COMPLIANT_INTERFACE_READY"}
-                  </span>
-                  <span className="text-zinc-400 font-bold tabular-nums">
-                    {loadingProgress}%
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className={`relative min-h-screen text-white font-sans selection:bg-white selection:text-black overflow-x-hidden flex flex-col justify-between transition-all duration-1000 ${(activeView === "about" || activeView === "certs" || activeView === "contact") ? "bg-transparent" : "bg-black"}`}>
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-[#41B3A3] origin-left z-[100] shadow-[0_0_10px_#41B3A3]"
-        style={{ scaleX }}
-      />
-
-      {/* Background Loop Videos with Smooth Responsive Cloudinary Crossfade */}
-      <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <motion.video
-          key="video-default"
-          className="absolute inset-0 w-full h-full object-cover"
-          src={isMobile 
-            ? "https://res.cloudinary.com/dqtyuf02y/video/upload/v1781023576/HnVideoEditor_2026_06_10_004448194_lso0dp.mp4" 
-            : "https://res.cloudinary.com/dqtyuf02y/video/upload/v1780853514/gemini_generated_video_8b15deec_ifrrms.mp4"}
-          autoPlay loop muted playsInline
-          animate={{ opacity: (activeView === "about" || activeView === "certs" || activeView === "contact") ? 0 : 0.6 }}
-          transition={{ duration: 1.0, ease: "easeInOut" }}
-        />
-        <motion.video
-          key="video-about"
-          className="absolute inset-0 w-full h-full object-cover"
-          src={isMobile 
-            ? "https://res.cloudinary.com/dqtyuf02y/video/upload/v1781023581/HnVideoEditor_2026_06_10_004413527_h17cuf.mp4" 
-            : "https://res.cloudinary.com/dqtyuf02y/video/upload/v1780853433/gemini_generated_video_fbb884cc_oo3f8m.mp4"}
-          autoPlay loop muted playsInline
-          animate={{ opacity: activeView === "about" ? 1.0 : 0 }}
-          transition={{ duration: 1.0, ease: "easeInOut" }}
-        />
-        <motion.video
-          key="video-certs"
-          className="absolute inset-0 w-full h-full object-cover"
-          src={isMobile 
-            ? "https://res.cloudinary.com/dqtyuf02y/video/upload/v1781023581/HnVideoEditor_2026_06_10_004330226_gdoktp.mp4" 
-            : "https://res.cloudinary.com/dqtyuf02y/video/upload/v1780853432/Make_character_alive_blinking_br__202606072030_onzb7e.mp4"}
-          autoPlay loop muted playsInline
-          animate={{ opacity: activeView === "certs" ? 1.0 : 0 }}
-          transition={{ duration: 1.0, ease: "easeInOut" }}
-        />
-        <motion.video
-          key="video-contact"
-          className="absolute inset-0 w-full h-full object-cover"
-          src={isMobile 
-            ? "https://res.cloudinary.com/dqtyuf02y/video/upload/v1781023584/HnVideoEditor_2026_06_10_004224069_rnmhex.mp4" 
-            : "https://res.cloudinary.com/dqtyuf02y/video/upload/v1780853433/gemini_generated_video_2c0a1bca_hpbmpi.mp4"}
-          autoPlay loop muted playsInline
-          animate={{ opacity: activeView === "contact" ? 1.0 : 0 }}
-          transition={{ duration: 1.0, ease: "easeInOut" }}
-        />
-        <motion.div 
-          className="absolute inset-0 bg-black/35 bg-gradient-to-b from-black/50 via-transparent to-black/50" 
-          animate={{ opacity: (activeView === "about" || activeView === "certs" || activeView === "contact") ? 0.7 : 1.0 }}
-          transition={{ duration: 1.0, ease: "easeInOut" }}
-        />
-      </div>
-
-      {/* 1. HEADER SECTION */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur-md border-b border-white/10 py-6 transition-all duration-300"
-      >
-        <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center relative">
-          <motion.button 
-            onClick={() => handleNavClick("hero")}
-            className="text-2xl font-black tracking-tighter text-white select-none cursor-pointer hover:opacity-80 transition-opacity z-50 inline-block"
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          >
-            KT
-          </motion.button>
-
-          {/* DESKTOP NAVIGATION */}
-          <nav className="hidden md:flex items-center gap-x-8">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-8 text-xs font-bold tracking-widest text-zinc-300 uppercase">
             {navItems.map((item) => {
-              const isActive = activeView === item.value;
+              const isActive = activeSection === item.id;
               return (
-                <button
-                  key={item.value}
-                  onClick={() => handleNavClick(item.value)}
-                  className={`text-sm font-bold tracking-widest transition-colors duration-300 relative py-1 group uppercase cursor-pointer ${
-                    isActive ? "text-white" : "text-zinc-400 hover:text-white"
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollToSection(e, item.id)}
+                  className={`transition-all duration-200 py-1 cursor-pointer ${
+                    isActive 
+                      ? "text-white border-b-2 border-[#E83E8C] font-extrabold" 
+                      : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   {item.label}
-                  <span className={`absolute bottom-0 left-0 h-[1.5px] bg-[#41B3A3] transition-all duration-300 ${
-                    isActive ? "w-full" : "w-0 group-hover:w-full"
-                  }`} />
-                </button>
+                </a>
               );
             })}
           </nav>
 
-          {/* MOBILE TOGGLE NAVIGATION TRIGGER BUTTON */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden text-white hover:text-[#41B3A3] transition-colors p-1 focus:outline-none z-50 cursor-pointer"
-            aria-label="Toggle navigation menu"
-          >
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-
-          {/* MOBILE NAV PANEL DRAWER COLLAPSE BOX */}
-          <AnimatePresence>
-            {menuOpen && (
-              <motion.nav
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute top-full left-0 w-full bg-black/95 backdrop-blur-lg border-b border-white/10 flex flex-col items-center py-8 space-y-5 md:hidden z-40 shadow-2xl"
-              >
-                {navItems.map((item) => {
-                  const isActive = activeView === item.value;
-                  return (
-                    <button
-                      key={item.value}
-                      onClick={() => {
-                        handleNavClick(item.value);
-                        setMenuOpen(false);
-                      }}
-                      className={`text-sm font-bold tracking-widest uppercase transition-all duration-300 py-3 px-6 rounded-xl w-[80%] text-center ${
-                        isActive 
-                          ? "text-black bg-[#41B3A3] shadow-lg shadow-[#41B3A3]/25" 
-                          : "text-zinc-300 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </motion.nav>
-            )}
-          </AnimatePresence>
+          {/* Hamburger Menu Toggle for Mobile */}
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-zinc-300 hover:text-white transition-colors cursor-pointer p-1"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
-      </motion.header>
 
-      {/* 2. MAIN HUB VIEWPORT */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 flex-grow flex flex-col py-12 md:py-20 space-y-32 md:space-y-48">
-        
-        {/* HERO SECTION */}
-        <section id="hero" className="w-full min-h-[75vh] flex items-center justify-start scroll-mt-24 pt-4 pb-16">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-start text-left w-full max-w-5xl space-y-8 md:space-y-12"
-          >
-            <div className="flex flex-col">
-              <motion.div 
-                key={`g-${animationKey}`}
-                initial={getInitialVariant(animationStyle, "g")}
-                animate={{ y: 0, x: 0, scale: 1, rotate: 0, opacity: 1.0 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="text-lg md:text-xl font-bold text-[#41B3A3] mb-2 md:mb-4 tracking-[0.1em] uppercase select-none"
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden pt-4 pb-2 border-t border-zinc-800/80 mt-3 flex flex-col space-y-3 text-xs font-bold tracking-widest uppercase">
+            {navItems.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollToSection(e, item.id)}
+                  className={`py-1.5 transition-colors cursor-pointer ${
+                    isActive ? "text-[#E83E8C] font-black" : "text-zinc-300 hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </div>
+        )}
+      </header>
+
+      {/* HERO SECTION matching reference image with background photo */}
+      <section id="home" className="relative min-h-[85vh] flex items-center overflow-hidden border-b border-zinc-800/40">
+        {/* Background Image Layer */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://res.cloudinary.com/dqtyuf02y/image/upload/v1784880279/1784880111834_edit_25916954757664_v5lhd8.png"
+            alt="Kazi Tonu - WSH Coordinator"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover object-right-bottom sm:object-right md:object-[85%_center]"
+          />
+          {/* Gradients to ensure crisp text contrast on the left & top header integration */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#181818] via-[#181818]/90 sm:via-[#181818]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-[#181818]/60 lg:to-transparent" />
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 max-w-7xl mx-auto w-full px-6 lg:px-16 py-16">
+          <div className="max-w-2xl sm:max-w-xl lg:max-w-2xl space-y-5">
+            <p className="text-xs sm:text-sm font-bold tracking-[0.25em] text-zinc-300 uppercase drop-shadow-sm">
+              HELLO, MY NAME IS
+            </p>
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none drop-shadow-md">
+              KAZI TONU
+            </h1>
+            <p className="text-sm sm:text-base text-zinc-300 font-normal leading-relaxed pt-1 drop-shadow">
+              Workplace Safety and Health (WSH) Coordinator based in Singapore. Experienced in supervising high-risk construction activities, conducting HIRA risk assessments, and ensuring full MOM regulatory compliance to maintain zero-incident workplaces.
+            </p>
+
+            <div className="pt-4">
+              <a 
+                href="#experience" 
+                onClick={(e) => scrollToSection(e, "experience")}
+                className="inline-block bg-[#D6D6D6] hover:bg-white text-zinc-950 font-bold px-8 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-all duration-200 shadow-lg cursor-pointer"
               >
-                Hello! I'm
-              </motion.div>
-
-              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black uppercase tracking-tight leading-[0.85] text-white flex flex-col select-none">
-                <span className="block overflow-hidden relative">
-                  <motion.span
-                    key={`k-${animationKey}`}
-                    initial={getInitialVariant(animationStyle, "k")}
-                    animate={{ y: 0, x: 0, scale: 1, rotate: 0, opacity: 1 }}
-                    transition={{ duration: 1.1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="block"
-                  >
-                    KAZI
-                  </motion.span>
-                </span>
-                <span className="block overflow-hidden relative">
-                  <motion.span
-                    key={`t-${animationKey}`}
-                    initial={getInitialVariant(animationStyle, "t")}
-                    animate={{ y: 0, x: 0, scale: 1, rotate: 0, opacity: 0.95 }}
-                    transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="block text-white/95"
-                  >
-                    TONU
-                  </motion.span>
-                </span>
-              </h1>
+                MY WORK
+              </a>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="flex flex-col pt-6 md:pt-8 border-t border-white/5 w-full items-end text-right">
-              <div className="max-w-3xl flex flex-col items-end text-right">
-                <div className="overflow-hidden mb-2">
-                  <motion.div 
-                    key={`sh-${animationKey}`}
-                    initial={getInitialVariant(animationStyle, "sh")}
-                    animate={{ y: 0, x: 0, scale: 1, rotate: 0, opacity: 1.0 }}
-                    transition={{ duration: 0.8, delay: 0.55, ease: "easeOut" }}
-                    className="text-xs sm:text-sm md:text-base font-extrabold tracking-[0.25em] text-[#41B3A3] uppercase select-none"
-                  >
-                    WORKPLACE SAFETY AND HEALTH
-                  </motion.div>
-                </div>
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto px-4 lg:px-8 py-12 space-y-16">
 
-                <div className="overflow-hidden">
-                  <motion.h2 
-                    key={`c-${animationKey}`}
-                    initial={getInitialVariant(animationStyle, "c")}
-                    animate={{ y: 0, x: 0, scale: 1, rotate: 0, opacity: 1 }}
-                    transition={{ duration: 1.1, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black uppercase tracking-tight leading-none text-white"
-                  >
-                    COORDINATOR
-                  </motion.h2>
-                </div>
+        {/* ABOUT ME Section matching reference image */}
+        <section id="summary" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-10 shadow-2xl">
+          {/* Centered Heading with Underline */}
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-widest uppercase">
+              ABOUT ME
+            </h2>
+            <div className="flex items-center justify-center pt-1">
+              <div className="w-12 h-0.5 bg-zinc-300 rounded-full" />
+            </div>
+          </div>
+
+          {/* Two Column Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+            {/* Left Column: Greeting, Description & Download CV Button */}
+            <div className="lg:col-span-6 space-y-6">
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Howdy!
+              </h3>
+              <p className="text-sm sm:text-base text-zinc-300 font-normal leading-relaxed">
+                I am Kazi Tonu, a dedicated Workplace Safety and Health (WSH) Coordinator based in Singapore. Experienced in supervising high-risk construction activities, conducting thorough HIRA risk assessments, and ensuring full MOM regulatory compliance to maintain zero-incident workplaces.
+              </p>
+
+              <div className="pt-3">
+                <a 
+                  href={cvUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 bg-[#D6D6D6] hover:bg-white text-zinc-950 font-extrabold px-7 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-all duration-200 shadow-sm cursor-pointer active:scale-95"
+                >
+                  <span>DOWNLOAD MY CV</span>
+                  <Download className="w-4 h-4" />
+                </a>
               </div>
             </div>
-          </motion.div>
+
+            {/* Right Column: Skill Proficiency Progress Bars */}
+            <div className="lg:col-span-6 space-y-6 pt-2 lg:pt-0">
+              {aboutSkills.map((skill, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white">
+                    <span>{skill.label}</span>
+                    <span className="text-zinc-300 font-bold">{skill.percentage}%</span>
+                  </div>
+                  <div className="relative w-full h-2 bg-zinc-700/80 rounded-full overflow-visible">
+                    <div 
+                      className="h-full bg-white rounded-full relative transition-all duration-1000 ease-out"
+                      style={{ width: `${skill.percentage}%` }}
+                    >
+                      <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-zinc-900 rounded-full shadow-md" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* ABOUT ME SECTION */}
-        <section id="about" className="w-full min-h-[75vh] flex items-center justify-center scroll-mt-24 py-12 md:py-20">
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full flex flex-col md:grid md:grid-cols-12 gap-8 items-center"
-          >
-            <div className="hidden md:block md:col-span-4 lg:col-span-5" />
-
-            <div className="col-span-12 md:col-span-8 lg:col-span-7 flex flex-col justify-center text-left space-y-6 bg-black/65 border border-white/15 p-6 sm:p-10 md:p-12 rounded-3xl relative overflow-hidden backdrop-blur-lg shadow-2xl transition-all duration-500 hover:border-[#41B3A3]/30 w-full">
-              <div className="text-[#41B3A3] text-sm md:text-base font-semibold tracking-[0.25em] uppercase">
-                ABOUT ME
-              </div>
-              <TypingText 
-                text="Certified professional with expertise in implementing safety protocols, conducting risk assessments, and ensuring compliance. Skilled in team supervision and maintaining a safe workplace."
-                className="text-xl sm:text-2xl md:text-3xl lg:text-[2.5rem] font-medium text-white/95 leading-[1.35] tracking-wide"
-              />
+        {/* Work Experience Section matching reference image */}
+        <section id="experience" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-12 shadow-2xl">
+          {/* Centered Heading with Underline */}
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-widest uppercase">
+              MY EXPERIENCE
+            </h2>
+            <div className="flex items-center justify-center pt-1">
+              <div className="w-12 h-0.5 bg-zinc-300 rounded-full" />
             </div>
-          </motion.div>
-        </section>
+          </div>
 
-        {/* RESUME CARD SECTION */}
-        <section id="resume" className="w-full min-h-[75vh] flex items-center justify-center scroll-mt-24 py-12 md:py-20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full flex flex-col md:grid md:grid-cols-12 gap-8 items-start"
-          >
-            <div className="hidden md:block md:col-span-3 lg:col-span-4" />
-
-            <div className="col-span-12 md:col-span-9 lg:col-span-8 flex flex-col justify-center text-left space-y-6 md:pl-6 max-w-4xl w-full bg-black/55 border border-white/15 p-6 sm:p-8 md:p-10 rounded-3xl relative overflow-hidden backdrop-blur-lg shadow-2xl">
-              
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6 w-full">
-                <div>
-                  <span className="text-[#41B3A3] text-xs font-mono tracking-[0.2em] font-extrabold uppercase">// COMPLIANCE DOSSIER</span>
-                  <h3 className="text-3xl sm:text-4xl font-black uppercase text-white mt-1">{resumeDetails.name}</h3>
-                  <p className="text-xs font-mono tracking-wider text-zinc-400 uppercase font-bold">{resumeDetails.title}</p>
-                </div>
-                <button 
-                  onClick={() => window.print()}
-                  className="text-[10px] tracking-widest font-mono uppercase bg-white/5 border border-white/10 hover:bg-[#41B3A3] hover:text-black py-2.5 px-4.5 rounded-xl transition-all flex items-center space-x-2 cursor-pointer font-bold shrink-0 self-start sm:self-auto"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>PRINT DOSSIER</span>
-                </button>
-              </div>
-
-              <div className="space-y-2 bg-white/[0.03] border border-white/10 p-4.5 rounded-2xl">
-                <h4 className="text-[10px] font-mono font-black uppercase tracking-widest text-[#41B3A3]">// PROFESSIONAL SUMMARY</h4>
-                <p className="text-zinc-200 leading-relaxed text-xs sm:text-sm">{resumeDetails.summary}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 p-1.5 bg-white/[0.03] border border-white/10 rounded-2xl w-full font-mono">
-                <button
-                  onClick={() => setActiveResumeTab("experience")}
-                  className={`py-3 px-1 text-[9px] sm:text-xs font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer text-center flex flex-col sm:flex-row items-center justify-center gap-1.5 ${
-                    activeResumeTab === "experience" 
-                      ? "bg-[#41B3A3] text-black shadow-lg shadow-[#41B3A3]/10" 
-                      : "text-zinc-400 hover:text-white hover:bg-white/[0.03]"
-                  }`}
-                >
-                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
-                  <span>1. Timeline</span>
-                </button>
-                <button
-                  onClick={() => setActiveResumeTab("competencies")}
-                  className={`py-3 px-1 text-[9px] sm:text-xs font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer text-center flex flex-col sm:flex-row items-center justify-center gap-1.5 ${
-                    activeResumeTab === "competencies" 
-                      ? "bg-[#41B3A3] text-black shadow-lg shadow-[#41B3A3]/10" 
-                      : "text-zinc-400 hover:text-white hover:bg-white/[0.03]"
-                  }`}
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span>2. Core Skills</span>
-                </button>
-              </div>
-
-              <div className="min-h-[300px] w-full pt-2">
-                {activeResumeTab === "experience" && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full"
-                  >
-                    <div className="md:col-span-5 flex flex-col space-y-3">
-                      <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#41B3A3] mb-1 leading-none">// CLICK TO INVESTIGATE ROLES</div>
-                      
-                      {resumeDetails.experience.map((exp, idx) => {
-                        const isSelected = selectedRoleIdx === idx;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => setSelectedRoleIdx(idx)}
-                            className={`p-4 rounded-xl text-left border transition-all duration-300 relative group cursor-pointer flex flex-col justify-between ${
-                              isSelected 
-                                ? "bg-white/[0.06] border-[#41B3A3]/50 shadow-md" 
-                                : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]"
-                            }`}
-                          >
-                            <div className="flex justify-between items-start gap-2">
-                              <span className={`text-[11px] sm:text-xs font-black uppercase tracking-wider transition-colors ${isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-300"}`}>
-                                {exp.role === "Workplace Safety and Health Coordinator" ? "WSH Coordinator" : exp.role}
-                              </span>
-                              <span className="text-[9px] font-mono text-zinc-400 pr-1 shrink-0 font-bold">{exp.period}</span>
-                            </div>
-                            <div className="flex items-center justify-between mt-3">
-                              <span className="text-[10px] font-mono uppercase tracking-wide text-[#41B3A3] font-bold">{exp.company.replace(" Pte Ltd.", "")}</span>
-                              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? "bg-[#41B3A3] scale-125 shadow-[0_0_8px_#41B3A3]" : "bg-zinc-700"}`} />
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="md:col-span-7 bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
-                      {(() => {
-                        const activeJob = resumeDetails.experience[selectedRoleIdx];
-                        return (
-                          <motion.div 
-                            key={selectedRoleIdx}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="space-y-4 h-full flex flex-col justify-between"
-                          >
-                            <div className="space-y-3.5">
-                              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                                <span className="text-[9px] font-mono font-bold uppercase px-2.5 py-1 rounded bg-[#41B3A3]/10 text-[#41B3A3] tracking-widest font-black">
-                                  {selectedRoleIdx === 0 ? "CURRENT / MANAGEMENT" : selectedRoleIdx === 1 ? "FIELD SUPERVISOR" : "FIELD EXPERTISE"}
-                                </span>
-                                <div className="flex items-center space-x-1.5 text-[10px] text-zinc-300 font-mono">
-                                  <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                                  <span>{activeJob.period}</span>
-                                </div>
-                              </div>
-
-                              <div className="space-y-1">
-                                <h4 className="text-base font-black text-white uppercase tracking-wider leading-tight">{activeJob.role}</h4>
-                                <p className="text-[10px] font-mono uppercase text-[#41B3A3] font-black">{activeJob.company}</p>
-                              </div>
-
-                              <div className="space-y-2 pt-2.5">
-                                <div className="text-[9px] font-mono font-bold uppercase tracking-widest text-zinc-400">// KEY DELIVERABLES & ACCOMPLISHMENTS</div>
-                                <ul className="space-y-2.5">
-                                  {activeJob.bullets.map((bullet, bIdx) => (
-                                    <li key={bIdx} className="flex items-start space-x-2 text-zinc-200 text-xs sm:text-xs leading-relaxed font-sans">
-                                      <span className="text-[#41B3A3] shrink-0 font-bold mt-1.5">•</span>
-                                      <span>{bullet.trim()}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-
-                            <div className="pt-3 border-t border-white/10 text-[9px] font-mono text-zinc-400 flex justify-between items-center bg-white/[0.02] px-3 py-2 rounded-xl mt-4">
-                              <span>SINGAPORE MOM PROTOCOLS:</span>
-                              <span className="text-zinc-200 font-black">100% REGULATORY LAW COMPLIANT</span>
-                            </div>
-                          </motion.div>
-                        );
-                      })()}
-                    </div>
-                  </motion.div>
-                )}
-
-                {activeResumeTab === "competencies" && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="space-y-4 w-full"
-                  >
-                    <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#41B3A3] mb-1 leading-none">// MOM & WORKPLACE COMPLIANCE SKILLS MATRIX</div>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                      <div className="lg:col-span-5 flex w-full">
-                        <WshRadarChart 
-                          hoveredIndex={hoveredSkillIndex} 
-                          onHoverIndex={setHoveredSkillIndex} 
-                        />
-                      </div>
-
-                      <div className="lg:col-span-7 flex flex-col justify-between gap-3 w-full">
-                        {specializedSkillsList.map((skill, idx) => {
-                          const isHovered = hoveredSkillIndex === idx;
-                          return (
-                            <div 
-                              key={idx} 
-                              onMouseEnter={() => setHoveredSkillIndex(idx)}
-                              onMouseLeave={() => setHoveredSkillIndex(null)}
-                              className={`p-4 rounded-xl border flex flex-col justify-between space-y-3.5 group transition-all duration-300 relative ${
-                                isHovered 
-                                  ? "bg-[#41B3A3]/[0.04] border-[#41B3A3]/30 shadow-[0_0_20px_rgba(65,179,163,0.08)] scale-[1.01]" 
-                                  : "bg-white/[0.01] border-white/5 hover:border-white/10"
-                              }`}
-                            >
-                              <div className="space-y-1.5">
-                                <div className="flex justify-between items-start gap-2">
-                                  <span className={`text-xs font-black uppercase tracking-wider transition-colors duration-200 ${
-                                    isHovered ? "text-[#41B3A3]" : "text-white"
-                                  }`}>
-                                    {skill.name}
-                                  </span>
-                                  <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded leading-none transition-colors duration-200 ${
-                                    isHovered ? "bg-[#41B3A3] text-black" : "text-[#41B3A3] bg-[#41B3A3]/5"
-                                  }`}>
-                                    {skill.percentage}%
-                                  </span>
-                                </div>
-                                <div className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">
-                                  {skill.metrics}
-                                </div>
-                                <p className="text-[11px] text-zinc-300 leading-relaxed font-sans">
-                                  {skill.description}
-                                </p>
-                              </div>
-                              
-                              <div className="w-full h-[2px] bg-white/10 rounded-full overflow-hidden relative">
-                                <motion.div 
-                                  initial={false}
-                                  animate={{ 
-                                    width: `${skill.percentage}%`,
-                                    backgroundColor: isHovered ? "#41B3A3" : "rgba(65, 179, 163, 0.4)"
-                                  }}
-                                  transition={{ duration: 0.3 }}
-                                  className="h-full rounded-full"
-                                />
-                              </div>
-
-                              <div className="flex flex-wrap gap-1.5 font-mono pt-0.5">
-                                {skill.aspects.map((aspect, aIdx) => (
-                                  <span 
-                                    key={aIdx} 
-                                    className={`text-[8px] border px-2 py-0.5 rounded-sm uppercase font-bold tracking-wider transition-all duration-300 ${
-                                      isHovered 
-                                        ? "bg-[#41B3A3]/10 text-white border-[#41B3A3]/30" 
-                                        : "bg-white/5 text-zinc-400 border-white/5"
-                                    }`}
-                                  >
-                                    {aspect}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-              <div className="w-full pt-6 border-t border-white/10 mt-4">
-                <div className="space-y-3 max-w-2xl">
-                  <h4 className="text-[10px] font-mono font-bold uppercase tracking-[0.15em] text-[#41B3A3] flex items-center space-x-1.5 font-bold">
-                    <GraduationCap className="w-4 h-4" />
-                    <span>// EDUCATIONAL BACKGROUND</span>
+          {/* Experience Grid - 2 Columns */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 pt-4">
+            
+            {/* Column 1: WSH Coordinator & Safety Supervisor */}
+            <div className="space-y-10 sm:space-y-12">
+              {/* Item 1 */}
+              <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+                <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
+                    Success Forever
                   </h4>
-                  <div className="space-y-3">
-                    {resumeDetails.education.map((edu, eduIdx) => (
-                      <div key={eduIdx} className="space-y-0.5 border-l border-[#41B3A3]/30 pl-3 hover:border-l-2 hover:border-[#41B3A3] transition-all duration-200">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-white uppercase tracking-wider text-[11px]">{edu.degree}</span>
-                          <span className="text-zinc-400 font-mono text-[9px] font-bold">{edu.period}</span>
-                        </div>
-                        <p className="text-[11px] font-sans text-zinc-300 font-medium">{edu.institution}</p>
-                      </div>
-                    ))}
+                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400">
+                    Dec 2023 - Present
+                  </p>
+                </div>
+
+                <div className="col-span-1 flex flex-col items-center">
+                  <div className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <div className="w-px border-r-2 border-dashed border-zinc-600 h-28 my-2" />
+                </div>
+
+                <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
+                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+                    WSH Coordinator
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-normal">
+                    Oversee daily site safety, enforce strict compliance with Singapore WSH laws and MOM regulations, conduct HIRA risk assessments, and lead toolbox briefings to maintain zero incidents.
+                  </p>
+                </div>
+              </div>
+
+              {/* Item 2 */}
+              <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+                <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
+                    Success Forever
+                  </h4>
+                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400">
+                    Jun - Dec 2023
+                  </p>
+                </div>
+
+                <div className="col-span-1 flex flex-col items-center">
+                  <div className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
                 </div>
-              </div>
 
+                <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
+                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+                    Safety Supervisor
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-normal">
+                    Supervised high-risk work-at-height activities aligning with MOM safety bylaws, operated hydraulic boom lifts, and conducted daily site hazard audits.
+                  </p>
+                </div>
+              </div>
             </div>
-          </motion.div>
+
+            {/* Column 2: General Construction Worker */}
+            <div className="space-y-10 sm:space-y-12">
+              {/* Item 3 */}
+              <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+                <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
+                    Success Forever
+                  </h4>
+                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400">
+                    Feb 2022 - Jun 2023
+                  </p>
+                </div>
+
+                <div className="col-span-1 flex flex-col items-center">
+                  <div className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                </div>
+
+                <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
+                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+                    General Construction Worker
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-normal">
+                    Supported groundwork logistics, materials handling, site layout preparation, and equipment operations while mastering core workplace safety protocols.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Education Subsection */}
+          <div className="pt-8 border-t border-zinc-800/80 space-y-4">
+            <div className="flex items-center space-x-2">
+              <GraduationCap className="w-5 h-5 text-white" />
+              <h3 className="text-base sm:text-lg font-black text-white tracking-wide uppercase">Educational Background</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {resumeDetails.education.map((edu, eduIdx) => (
+                <div key={eduIdx} className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-xl space-y-1">
+                  <span className="text-xs font-bold text-white block">{edu.degree}</span>
+                  <p className="text-xs text-zinc-400">{edu.institution}</p>
+                  <span className="text-[11px] font-mono text-zinc-400 block pt-1">{edu.period}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* CERTS & LICENSES SECTION */}
-        <section id="certs" className="w-full min-h-[75vh] flex items-center justify-center scroll-mt-24 py-12 md:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full flex flex-col md:grid md:grid-cols-12 gap-8 items-center"
-          >
-            <div className="hidden md:block md:col-span-4 lg:col-span-5" />
+        {/* Certifications and Licenses Section */}
+        <section id="certifications" className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 lg:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+            <div className="flex items-center space-x-2">
+              <Award className="w-5 h-5 text-teal-400" />
+              <h2 className="text-xl font-bold text-white">Certifications & Licenses ({certificationsList.length})</h2>
+            </div>
 
-            <div className="col-span-12 md:col-span-8 lg:col-span-7 flex flex-col justify-center text-left space-y-6 md:pl-6 w-full animate-fadeIn">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
-                <div className="text-[#41B3A3] text-sm md:text-base font-semibold tracking-[0.25em] uppercase">
-                  CERTS & LICENSES
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap gap-2 text-xs font-medium">
+              <button
+                onClick={() => setCertFilter("all")}
+                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                  certFilter === "all"
+                    ? "bg-teal-600 text-white border-teal-500"
+                    : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                }`}
+              >
+                All ({certificationsList.length})
+              </button>
+              <button
+                onClick={() => setCertFilter("lifetime")}
+                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                  certFilter === "lifetime"
+                    ? "bg-teal-600 text-white border-teal-500"
+                    : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                }`}
+              >
+                Lifetime / No Expiry ({certificationsList.filter(c => getValidityDetails(c.expiryDate).status === 'lifetime').length})
+              </button>
+              <button
+                onClick={() => setCertFilter("valid")}
+                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                  certFilter === "valid"
+                    ? "bg-teal-600 text-white border-teal-500"
+                    : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                }`}
+              >
+                Active Valid ({certificationsList.filter(c => getValidityDetails(c.expiryDate).status === 'valid').length})
+              </button>
+              <button
+                onClick={() => setCertFilter("expiring")}
+                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                  certFilter === "expiring"
+                    ? "bg-amber-600 text-white border-amber-500"
+                    : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                }`}
+              >
+                Renewal Action ({certificationsList.filter(c => {
+                  const s = getValidityDetails(c.expiryDate).status;
+                  return s === 'expiring' || s === 'expired';
+                }).length})
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredCerts.map((cert) => {
+              const validity = getValidityDetails(cert.expiryDate);
+              return (
+                <div key={cert.title} className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-bold text-white leading-snug">{cert.title}</h3>
+                      <span className="text-[11px] font-mono text-zinc-500 shrink-0">{cert.date}</span>
+                    </div>
+
+                    <p className="text-xs font-semibold text-teal-400">{cert.authority}</p>
+                    <p className="text-xs text-zinc-400 leading-relaxed">{cert.description}</p>
+                  </div>
+
+                  <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-end text-xs font-mono">
+                    <span className={`px-2 py-0.5 rounded border text-[10px] font-semibold ${validity.badgeColor}`}>
+                      {validity.labelText}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest leading-none font-bold">
-                  // VALIDATION INTEGRITY REPORT
-                </span>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Specialized WSH Competencies */}
+        <section id="competencies" className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 lg:p-8 space-y-6">
+          <div className="flex items-center space-x-2 border-b border-zinc-800 pb-4">
+            <ShieldCheck className="w-5 h-5 text-teal-400" />
+            <h2 className="text-xl font-bold text-white">Specialized WSH Competencies & Capabilities</h2>
+          </div>
+
+          <div className="space-y-4">
+            {specializedSkillsList.map((skill, idx) => (
+              <div key={idx} className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <h3 className="text-sm font-bold text-white">{skill.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono bg-zinc-800 text-teal-400 px-2 py-0.5 rounded border border-zinc-700">
+                      {skill.metrics}
+                    </span>
+                    <span className="text-xs font-mono text-zinc-400 font-bold">{skill.percentage}</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-zinc-300 leading-relaxed">{skill.description}</p>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {skill.aspects.map((aspect, aIdx) => (
+                    <span key={aIdx} className="text-[11px] bg-zinc-900 text-zinc-400 px-2 py-0.5 rounded border border-zinc-800">
+                      {aspect}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contact" className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 lg:p-8 space-y-6">
+          <div className="border-b border-zinc-800 pb-4 space-y-1">
+            <h2 className="text-xl font-bold text-white">Contact & Communication Channels</h2>
+            <p className="text-xs text-zinc-400">Direct contact details for recruitment, site audits, and official inquiries.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Direct Contact Cards */}
+            <div className="space-y-4">
+              <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0">
+                    <Mail className="w-5 h-5 text-teal-400" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase">Email</span>
+                    <a href="mailto:tonukazi@gmail.com" className="text-sm font-bold text-white hover:text-teal-400 block">
+                      tonukazi@gmail.com
+                    </a>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCopyToClipboard("tonukazi@gmail.com", "email")}
+                  className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
+                  title="Copy email"
+                >
+                  {copiedText === "email" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
+                </button>
               </div>
 
-              <div id="cert-filter-controls" className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full p-1 bg-white/[0.03] border border-white/10 rounded-2xl font-mono text-[10px]">
+              <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded bg-emerald-950 border border-emerald-800 flex items-center justify-center shrink-0">
+                    <MessageCircle className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase">WhatsApp / Phone</span>
+                    <a href="https://wa.me/6580627387" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-white hover:text-teal-400 block">
+                      +65 8062 7387
+                    </a>
+                  </div>
+                </div>
                 <button
-                  id="filter-all"
-                  onClick={() => setCertFilter("all")}
-                  className={`py-2.5 px-2 rounded-xl font-bold uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
-                    certFilter === "all"
-                      ? "bg-[#41B3A3]/10 text-[#41B3A3] border border-[#41B3A3]/20 shadow-md"
-                      : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/[0.02]"
-                  }`}
+                  onClick={() => handleCopyToClipboard("+6580627387", "phone")}
+                  className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
+                  title="Copy number"
                 >
-                  <span>ALL CERTS</span>
-                  <span className="text-zinc-400 text-[9px] font-bold">{certificationsList.length}</span>
-                </button>
-                <button
-                  id="filter-lifetime"
-                  onClick={() => setCertFilter("lifetime")}
-                  className={`py-2.5 px-2 rounded-xl font-bold uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
-                    certFilter === "lifetime"
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-md"
-                      : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/[0.02]"
-                  }`}
-                >
-                  <span>LIFETIME</span>
-                  <span className="text-zinc-400 text-[9px] font-bold">
-                    {certificationsList.filter(c => getValidityDetails(c.expiryDate).status === 'lifetime').length}
-                  </span>
-                </button>
-                <button
-                  id="filter-valid"
-                  onClick={() => setCertFilter("valid")}
-                  className={`py-2.5 px-2 rounded-xl font-bold uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
-                    certFilter === "valid"
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-md"
-                      : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/[0.02]"
-                  }`}
-                >
-                  <span>ACTIVE VALID</span>
-                  <span className="text-zinc-400 text-[9px] font-bold">
-                    {certificationsList.filter(c => getValidityDetails(c.expiryDate).status === 'valid').length}
-                  </span>
-                </button>
-                <button
-                  id="filter-expiring"
-                  onClick={() => setCertFilter("expiring")}
-                  className={`py-2.5 px-2 rounded-xl font-bold uppercase transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
-                    certFilter === "expiring"
-                      ? "bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-md animate-pulse"
-                      : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/[0.02]"
-                  }`}
-                >
-                  <span>URGENT ACTIONS</span>
-                  <span className="text-zinc-400 text-[9px] font-bold">
-                    {certificationsList.filter(c => {
-                      const s = getValidityDetails(c.expiryDate).status;
-                      return s === 'expiring' || s === 'expired';
-                    }).length}
-                  </span>
+                  {copiedText === "phone" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
-              
-              <motion.div className="space-y-4 max-w-2xl w-full" layout>
-                {certificationsList
-                  .filter((cert) => {
-                    const details = getValidityDetails(cert.expiryDate);
-                    if (certFilter === "all") return true;
-                    if (certFilter === "lifetime") return details.status === "lifetime";
-                    if (certFilter === "valid") return details.status === "valid";
-                    if (certFilter === "expiring") return details.status === "expiring" || details.status === "expired";
-                    return true;
-                  })
-                  .map((cert, index) => {
-                    const validity = getValidityDetails(cert.expiryDate);
-                    return (
-                      <motion.div 
-                        key={cert.title} 
-                        layout
-                        initial={{ opacity: 0, y: 25 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-40px" }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                        className="p-5 rounded-2xl bg-black/65 backdrop-blur-md border border-white/15 hover:border-[#41B3A3]/30 transition-all duration-300 flex flex-col space-y-4 group shadow-xl"
+
+              <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded bg-blue-950 border border-blue-800 flex items-center justify-center shrink-0">
+                    <Linkedin className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase">LinkedIn</span>
+                    <a href="https://linkedin.com/in/kazitonu" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-white hover:text-teal-400 block">
+                      linkedin.com/in/kazitonu
+                    </a>
+                  </div>
+                </div>
+                <a
+                  href="https://linkedin.com/in/kazitonu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
+                  title="Visit LinkedIn"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                </a>
+              </div>
+
+              {copiedText && (
+                <div className="p-2 bg-emerald-950/80 border border-emerald-800 rounded text-xs text-emerald-400 text-center font-mono">
+                  ✓ Copied {copiedText === "email" ? "email" : "phone number"} to clipboard
+                </div>
+              )}
+            </div>
+
+            {/* Direct Message Form */}
+            <div className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg space-y-4">
+              <h3 className="text-sm font-bold text-white">Send Direct Inquiry</h3>
+
+              {formSubmitted ? (
+                <div className="p-6 text-center space-y-4 bg-teal-950/40 border border-teal-800 rounded-lg">
+                  <CheckCircle2 className="w-10 h-10 text-teal-400 mx-auto" />
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-white">Direct Email Triggered!</h4>
+                    <p className="text-xs text-zinc-300">
+                      Your message was addressed directly to <span className="text-teal-400 font-bold">tonukazi@gmail.com</span>.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-2">
+                    <a
+                      href={`https://mail.google.com/mail/?view=cm&fs=1&to=tonukazi@gmail.com&su=${encodeURIComponent(`[${lastSubmittedData.type.toUpperCase()} INQUIRY] From ${lastSubmittedData.name}`)}&body=${encodeURIComponent(`Name: ${lastSubmittedData.name}\nSender Email: ${lastSubmittedData.email}\nInquiry Type: ${lastSubmittedData.type}\n\nMessage:\n${lastSubmittedData.message}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2.5 rounded text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span>Open Web Gmail</span>
+                    </a>
+                    <a
+                      href={`mailto:tonukazi@gmail.com?subject=${encodeURIComponent(`[${lastSubmittedData.type.toUpperCase()} INQUIRY] From ${lastSubmittedData.name}`)}&body=${encodeURIComponent(`Name: ${lastSubmittedData.name}\nSender Email: ${lastSubmittedData.email}\nInquiry Type: ${lastSubmittedData.type}\n\nMessage:\n${lastSubmittedData.message}`)}`}
+                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 px-4 py-2.5 rounded text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <span>Re-open Default Mail App</span>
+                    </a>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setFormSubmitted(false)}
+                      className="text-xs text-zinc-400 hover:text-white underline font-medium cursor-pointer"
+                    >
+                      Send another message
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-zinc-400 mb-1">Inquiry Type</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setInquiryType("hiring")}
+                        className={`py-1.5 px-2 rounded border text-center transition-colors cursor-pointer ${
+                          inquiryType === "hiring" ? "bg-teal-600 text-white border-teal-500 font-semibold" : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                        }`}
                       >
-                        <div className="flex items-start space-x-4">
-                          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/5 group-hover:border-white/20 group-hover:bg-white/[0.12] transition-all">
-                            <Award className="w-5 h-5 text-[#41B3A3] group-hover:scale-110 transition-transform" />
-                          </div>
-                          <div className="flex-grow space-y-1">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
-                              <h4 className="text-sm font-bold text-white uppercase tracking-wider">{cert.title}</h4>
-                              <span className="text-[10px] font-mono text-zinc-400 uppercase shrink-0 font-bold">{cert.date}</span>
-                            </div>
-                            <p className="text-[11px] font-mono text-[#41B3A3] uppercase tracking-wide font-bold">{cert.authority}</p>
-                            <p className="text-xs text-zinc-200 font-sans leading-relaxed pt-1">{cert.description}</p>
-                          </div>
-                        </div>
+                        Hiring / Recruitment
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setInquiryType("audits")}
+                        className={`py-1.5 px-2 rounded border text-center transition-colors cursor-pointer ${
+                          inquiryType === "audits" ? "bg-teal-600 text-white border-teal-500 font-semibold" : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                        }`}
+                      >
+                        Site Safety Audit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setInquiryType("drills")}
+                        className={`py-1.5 px-2 rounded border text-center transition-colors cursor-pointer ${
+                          inquiryType === "drills" ? "bg-teal-600 text-white border-teal-500 font-semibold" : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                        }`}
+                      >
+                        Safety Training
+                      </button>
+                    </div>
+                  </div>
 
-                        <div className="pt-3 border-t border-white/10 space-y-1.5">
-                          <div className="flex justify-between items-center text-[10px] font-mono">
-                            <span className="text-zinc-500 uppercase tracking-widest">// VALIDATION HEALTH</span>
-                            <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black tracking-wider ${validity.badgeColor}`}>
-                              {validity.labelText.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden relative">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${validity.percent}%` }}
-                              transition={{ duration: 0.6, ease: "easeOut" }}
-                              className={`h-full rounded-full ${validity.barColor} ${validity.pulse ? "animate-pulse" : ""}`}
-                              style={{
-                                boxShadow: validity.percent > 0 
-                                  ? `0 0 10px ${validity.barColor === 'bg-amber-500' ? 'rgba(245,158,11,0.4)' : validity.barColor === 'bg-red-500' ? 'rgba(239,68,68,0.4)' : 'rgba(65,179,163,0.4)'}` 
-                                  : 'none'
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-              </motion.div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="e.g. John Doe / Project Manager"
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-zinc-200 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 mb-1">Your Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="name@company.com"
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-zinc-200 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 mb-1">Message Details</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      placeholder="Describe your inquiry or vacancy details..."
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-zinc-200 focus:outline-none focus:border-teal-500 resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2.5 rounded transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{isSubmitting ? "Sending Inquiry..." : "Submit Inquiry"}</span>
+                  </button>
+                </form>
+              )}
             </div>
-          </motion.div>
-        </section>
-
-        {/* CONTACT SECTION */}
-        <section id="contact" className="w-full min-h-[75vh] flex items-center justify-center scroll-mt-24 py-12 md:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full flex flex-col md:grid md:grid-cols-12 gap-8 items-center"
-          >
-            <div className="hidden md:block md:col-span-4 lg:col-span-5" />
-
-            <div className="col-span-12 md:col-span-8 lg:col-span-7 flex flex-col justify-center text-left space-y-6 md:pl-6 w-full">
-              <div className="space-y-2">
-                <div className="text-[#41B3A3] text-sm md:text-base font-semibold tracking-[0.25em] uppercase">
-                  GET IN TOUCH
-                </div>
-                <h3 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white">
-                  LET'S COLLABORATE
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-300 font-sans max-w-xl leading-relaxed">
-                  Have any inquiries, project suggestions, or recruitment proposals? Reach out directly through one of my verified secure digital communication channels below.
-                </p>
-              </div>
-
-              <div id="contact-channels-card" className="w-full max-w-xl bg-black/75 border border-white/15 hover:border-[#41B3A3]/30 p-5 sm:p-8 rounded-2xl sm:rounded-3xl relative overflow-hidden backdrop-blur-lg transition-all duration-500 shadow-2xl flex flex-col space-y-4">
-                
-                <motion.div 
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.5, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-                  className="group/item relative bg-white/[0.03] border border-white/10 hover:border-[#41B3A3]/40 active:border-[#41B3A3]/60 p-4 rounded-xl flex items-center justify-between transition-all duration-300 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(65,179,163,0.12)]"
-                >
-                  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                      <Mail className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">// SECURE EMAIL</div>
-                      <a href="mailto:tonukazi@gmail.com" className="text-xs sm:text-sm font-bold text-white hover:text-[#41B3A3] transition-colors break-all block text-zinc-300">
-                        tonukazi@gmail.com
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1.5 shrink-0">
-                    <button
-                      onClick={() => handleCopyToClipboard("tonukazi@gmail.com", "email")}
-                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer active:scale-95"
-                    >
-                      {copiedText === "email" ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                    <a href="mailto:tonukazi@gmail.com" className="p-2 rounded-lg bg-[#41B3A3]/10 hover:bg-[#41B3A3] text-[#41B3A3] hover:text-black transition-all cursor-pointer active:scale-95">
-                      <ArrowUpRight className="w-3.5 h-3.5 font-bold" />
-                    </a>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-                  className="group/item relative bg-white/[0.03] border border-white/10 hover:border-[#41B3A3]/40 active:border-[#41B3A3]/60 p-4 rounded-xl flex items-center justify-between transition-all duration-300 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(65,179,163,0.12)]"
-                >
-                  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                      <MessageCircle className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">// WHATSAPP CHAT</div>
-                      <a href="https://wa.me/6580627387" target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm font-bold text-white hover:text-[#41B3A3] transition-colors block text-zinc-300">
-                        +65 8062 7387
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1.5 shrink-0">
-                    <button
-                      onClick={() => handleCopyToClipboard("+6580627387", "phone")}
-                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer active:scale-95"
-                    >
-                      {copiedText === "phone" ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                    <a href="https://wa.me/6580627387" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[#41B3A3]/10 hover:bg-[#41B3A3] text-[#41B3A3] hover:text-black transition-all cursor-pointer active:scale-95">
-                      <ArrowUpRight className="w-3.5 h-3.5 font-bold" />
-                    </a>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.5, delay: 0.19, ease: [0.16, 1, 0.3, 1] }}
-                  className="group/item relative bg-white/[0.03] border border-white/10 hover:border-[#41B3A3]/40 active:border-[#41B3A3]/60 p-4 rounded-xl flex items-center justify-between transition-all duration-300 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(65,179,163,0.12)]"
-                >
-                  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-[#41B3A3]/10 border border-[#41B3A3]/25 flex items-center justify-center shrink-0">
-                      <Linkedin className="w-5 h-5 text-[#41B3A3]" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">// PROFESSIONAL LINKEDIN</div>
-                      <a href="https://linkedin.com/in/kazitonu" target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm font-bold text-white hover:text-[#41B3A3] transition-colors break-all block text-zinc-300">
-                        linkedin/in/kazitonu
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1.5 shrink-0">
-                    <a href="https://linkedin.com/in/kazitonu" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[#41B3A3]/10 hover:bg-[#41B3A3] text-[#41B3A3] hover:text-black transition-all cursor-pointer active:scale-95">
-                      <ArrowUpRight className="w-3.5 h-3.5 font-bold" />
-                    </a>
-                  </div>
-                </motion.div>
-
-                <AnimatePresence>
-                  {copiedText && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-widest text-center pt-2 select-none"
-                    >
-                      ✓ copied {copiedText === "email" ? "email address" : "phone number"} to clipboard
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-4">
-                <div className="bg-black/60 border border-white/10 backdrop-blur-md py-2.5 px-4 rounded-xl flex items-center space-x-2.5 text-xs text-zinc-300 font-mono shadow-md select-none">
-                  <MapPin className="w-3.5 h-3.5 text-[#41B3A3]" />
-                  <span className="flex items-center gap-1.5">
-                    Singapore Base
-                    <span className="text-sm" role="img" aria-label="Singapore">🇸🇬</span>
-                  </span>
-                </div>
-                <div className="bg-black/60 border border-white/10 backdrop-blur-md py-2.5 px-4 rounded-xl flex items-center space-x-2.5 text-xs text-zinc-300 font-mono shadow-md select-none">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#41B3A3] animate-pulse" />
-                  <span>Available for Global Placement</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </section>
       </main>
 
-      {/* 3. FOOTER */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-8 text-center md:text-left flex flex-col sm:flex-row justify-between items-center gap-4">
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="text-[10px] uppercase tracking-[0.15em] text-zinc-500 font-medium font-sans"
-        >
-          © {new Date().getFullYear()} KAZI TONU. ALL RIGHTS RESERVED.
-        </motion.p>
-        {activeView !== "hero" && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            whileHover={{ opacity: 1, x: -5 }}
-            onClick={() => handleNavClick("hero")}
-            className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold cursor-pointer flex items-center space-x-2"
-          >
-            <span>← RETURN TO HOME</span>
-          </motion.button>
-        )}
+      {/* Footer */}
+      <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-center text-xs text-zinc-500 font-mono">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+          <span>© {new Date().getFullYear()} KAZI TONU • Workplace Safety and Health Coordinator</span>
+          <a href="#summary" className="text-teal-400 hover:underline">Return to top ↑</a>
+        </div>
       </footer>
     </div>
-  </>
   );
 }

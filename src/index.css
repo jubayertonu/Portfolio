@@ -5,3 +5,9 @@
   --font-sans: "Outfit", "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-space: "Space Grotesk", sans-serif;
 }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
