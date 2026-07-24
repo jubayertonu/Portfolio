@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   FileText, 
   Mail, 
@@ -18,9 +18,7 @@ import {
   MessageCircle, 
   Copy, 
   Check,
-  Send,
   User,
-  CheckCircle2,
   Menu,
   X,
   Download
@@ -29,11 +27,30 @@ import {
 export default function App() {
   const [certFilter, setCertFilter] = useState<"all" | "lifetime" | "valid" | "expiring">("all");
   const [copiedText, setCopiedText] = useState("");
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [inquiryType, setInquiryType] = useState<"hiring" | "audits" | "drills">("hiring");
-  const [lastSubmittedData, setLastSubmittedData] = useState({ name: "", email: "", message: "", type: "hiring" });
+  const [skillsVisible, setSkillsVisible] = useState(false);
+  const skillsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSkillsVisible(true);
+          if (skillsRef.current) {
+            observer.unobserve(skillsRef.current);
+          }
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (skillsRef.current) {
+      observer.observe(skillsRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const cvUrl = "https://res-console.cloudinary.com/dqtyuf02y/thumbnails/v1/image/upload/v1784887403/S2F6aV9Ub251X1VwZGF0ZWRfRm9ybWF0X0NWLnBkZl8yMDI2MDcwN18wMTE1NTZfMDAwMC5wZGZfMjAyNjA3MTNfMjM0NDQwXzAwMDBfcW9zczJo/as_is/Kazi_Tonu_Updated_Format_CV.pdf_20260707_011556_0000.pdf_20260713_234440_0000_qoss2h";
 
@@ -55,31 +72,6 @@ export default function App() {
     setTimeout(() => setCopiedText(""), 2000);
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const subject = `[${inquiryType.toUpperCase()} INQUIRY] From ${formData.name}`;
-    const body = `Name: ${formData.name}\nSender Email: ${formData.email}\nInquiry Type: ${inquiryType}\n\nMessage:\n${formData.message}`;
-
-    setLastSubmittedData({
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-      type: inquiryType
-    });
-
-    // Trigger standard mailto for native/desktop email clients
-    const mailtoUrl = `mailto:tonukazi@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoUrl;
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setFormSubmitted(true);
-      setFormData({ name: "", email: "", message: "" });
-    }, 400);
-  };
-
   const resumeDetails = {
     name: "Kazi Tonu",
     title: "Workplace Safety and Health (WSH) Coordinator",
@@ -89,7 +81,7 @@ export default function App() {
     experience: [
       {
         role: "Workplace Safety and Health Coordinator",
-        company: "Success Forever Construction & Maintenance Pte Ltd.",
+        company: "Success Forever Construction and Maintenance Pte LTD",
         period: "Dec 2023 - Present",
         bullets: [
           "Oversee daily site safety and enforce strict compliance with WSH laws and standard regulations.",
@@ -99,7 +91,7 @@ export default function App() {
       },
       {
         role: "Safety Supervisor",
-        company: "Success Forever Construction & Maintenance Pte Ltd.",
+        company: "Success Forever Construction and Maintenance Pte LTD",
         period: "Jun 2023 - Dec 2023",
         bullets: [
           "Supervised challenging work-at-height activities, ensuring full regulatory alignment with MOM safety bylaws.",
@@ -109,7 +101,7 @@ export default function App() {
       },
       {
         role: "General Worker",
-        company: "Success Forever Construction & Maintenance Pte Ltd.",
+        company: "Success Forever Construction and Maintenance Pte LTD",
         period: "Feb 2022 - Jun 2023",
         bullets: [
           "Supported groundwork logistics, rigorous materials handling, and diverse general construction operations.",
@@ -517,9 +509,15 @@ export default function App() {
             </div>
 
             {/* Right Column: Skill Proficiency Progress Bars */}
-            <div className="lg:col-span-6 space-y-6 pt-2 lg:pt-0">
+            <div ref={skillsRef} className="lg:col-span-6 space-y-6 pt-2 lg:pt-0">
               {aboutSkills.map((skill, index) => (
-                <div key={index} className="space-y-2">
+                <div 
+                  key={index} 
+                  className={`space-y-2 transition-all duration-700 ease-out transform ${
+                    skillsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                  }`}
+                  style={{ transitionDelay: `${index * 120}ms` }}
+                >
                   <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white">
                     <span>{skill.label}</span>
                     <span className="text-zinc-300 font-bold">{skill.percentage}%</span>
@@ -527,7 +525,10 @@ export default function App() {
                   <div className="relative w-full h-2 bg-zinc-700/80 rounded-full overflow-visible">
                     <div 
                       className="h-full bg-white rounded-full relative transition-all duration-1000 ease-out"
-                      style={{ width: `${skill.percentage}%` }}
+                      style={{ 
+                        width: skillsVisible ? `${skill.percentage}%` : "0%",
+                        transitionDelay: `${index * 120 + 200}ms`
+                      }}
                     >
                       <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-zinc-900 rounded-full shadow-md" />
                     </div>
@@ -558,10 +559,10 @@ export default function App() {
               {/* Item 1 */}
               <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
                 <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
-                    Success Forever
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight">
+                    Success Forever Construction and Maintenance Pte LTD
                   </h4>
-                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400">
+                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400 pt-0.5">
                     Dec 2023 - Present
                   </p>
                 </div>
@@ -586,10 +587,10 @@ export default function App() {
               {/* Item 2 */}
               <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
                 <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
-                    Success Forever
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight">
+                    Success Forever Construction and Maintenance Pte LTD
                   </h4>
-                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400">
+                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400 pt-0.5">
                     Jun - Dec 2023
                   </p>
                 </div>
@@ -616,10 +617,10 @@ export default function App() {
               {/* Item 3 */}
               <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
                 <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
-                    Success Forever
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight">
+                    Success Forever Construction and Maintenance Pte LTD
                   </h4>
-                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400">
+                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400 pt-0.5">
                     Feb 2022 - Jun 2023
                   </p>
                 </div>
@@ -784,205 +785,78 @@ export default function App() {
             <p className="text-xs text-zinc-400">Direct contact details for recruitment, site audits, and official inquiries.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Direct Contact Cards */}
-            <div className="space-y-4">
-              <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0">
-                    <Mail className="w-5 h-5 text-teal-400" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase">Email</span>
-                    <a href="mailto:tonukazi@gmail.com" className="text-sm font-bold text-white hover:text-teal-400 block">
-                      tonukazi@gmail.com
-                    </a>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0">
+                  <Mail className="w-5 h-5 text-teal-400" />
                 </div>
-                <button
-                  onClick={() => handleCopyToClipboard("tonukazi@gmail.com", "email")}
-                  className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
-                  title="Copy email"
-                >
-                  {copiedText === "email" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
-                </button>
+                <div>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">Email</span>
+                  <a href="mailto:tonukazi@gmail.com" className="text-sm font-bold text-white hover:text-teal-400 block truncate">
+                    tonukazi@gmail.com
+                  </a>
+                </div>
               </div>
-
-              <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded bg-emerald-950 border border-emerald-800 flex items-center justify-center shrink-0">
-                    <MessageCircle className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase">WhatsApp / Phone</span>
-                    <a href="https://wa.me/6580627387" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-white hover:text-teal-400 block">
-                      +65 8062 7387
-                    </a>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleCopyToClipboard("+6580627387", "phone")}
-                  className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
-                  title="Copy number"
-                >
-                  {copiedText === "phone" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
-                </button>
-              </div>
-
-              <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded bg-blue-950 border border-blue-800 flex items-center justify-center shrink-0">
-                    <Linkedin className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase">LinkedIn</span>
-                    <a href="https://linkedin.com/in/kazitonu" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-white hover:text-teal-400 block">
-                      linkedin.com/in/kazitonu
-                    </a>
-                  </div>
-                </div>
-                <a
-                  href="https://linkedin.com/in/kazitonu"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer"
-                  title="Visit LinkedIn"
-                >
-                  <ArrowUpRight className="w-4 h-4" />
-                </a>
-              </div>
-
-              {copiedText && (
-                <div className="p-2 bg-emerald-950/80 border border-emerald-800 rounded text-xs text-emerald-400 text-center font-mono">
-                  ✓ Copied {copiedText === "email" ? "email" : "phone number"} to clipboard
-                </div>
-              )}
+              <button
+                onClick={() => handleCopyToClipboard("tonukazi@gmail.com", "email")}
+                className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer shrink-0 ml-2"
+                title="Copy email"
+              >
+                {copiedText === "email" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
+              </button>
             </div>
 
-            {/* Direct Message Form */}
-            <div className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg space-y-4">
-              <h3 className="text-sm font-bold text-white">Send Direct Inquiry</h3>
-
-              {formSubmitted ? (
-                <div className="p-6 text-center space-y-4 bg-teal-950/40 border border-teal-800 rounded-lg">
-                  <CheckCircle2 className="w-10 h-10 text-teal-400 mx-auto" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-white">Direct Email Triggered!</h4>
-                    <p className="text-xs text-zinc-300">
-                      Your message was addressed directly to <span className="text-teal-400 font-bold">tonukazi@gmail.com</span>.
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-2">
-                    <a
-                      href={`https://mail.google.com/mail/?view=cm&fs=1&to=tonukazi@gmail.com&su=${encodeURIComponent(`[${lastSubmittedData.type.toUpperCase()} INQUIRY] From ${lastSubmittedData.name}`)}&body=${encodeURIComponent(`Name: ${lastSubmittedData.name}\nSender Email: ${lastSubmittedData.email}\nInquiry Type: ${lastSubmittedData.type}\n\nMessage:\n${lastSubmittedData.message}`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2.5 rounded text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span>Open Web Gmail</span>
-                    </a>
-                    <a
-                      href={`mailto:tonukazi@gmail.com?subject=${encodeURIComponent(`[${lastSubmittedData.type.toUpperCase()} INQUIRY] From ${lastSubmittedData.name}`)}&body=${encodeURIComponent(`Name: ${lastSubmittedData.name}\nSender Email: ${lastSubmittedData.email}\nInquiry Type: ${lastSubmittedData.type}\n\nMessage:\n${lastSubmittedData.message}`)}`}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 px-4 py-2.5 rounded text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <span>Re-open Default Mail App</span>
-                    </a>
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      onClick={() => setFormSubmitted(false)}
-                      className="text-xs text-zinc-400 hover:text-white underline font-medium cursor-pointer"
-                    >
-                      Send another message
-                    </button>
-                  </div>
+            <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded bg-emerald-950 border border-emerald-800 flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-5 h-5 text-emerald-400" />
                 </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-3 text-xs">
-                  <div>
-                    <label className="block text-zinc-400 mb-1">Inquiry Type</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setInquiryType("hiring")}
-                        className={`py-1.5 px-2 rounded border text-center transition-colors cursor-pointer ${
-                          inquiryType === "hiring" ? "bg-teal-600 text-white border-teal-500 font-semibold" : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                        }`}
-                      >
-                        Hiring / Recruitment
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setInquiryType("audits")}
-                        className={`py-1.5 px-2 rounded border text-center transition-colors cursor-pointer ${
-                          inquiryType === "audits" ? "bg-teal-600 text-white border-teal-500 font-semibold" : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                        }`}
-                      >
-                        Site Safety Audit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setInquiryType("drills")}
-                        className={`py-1.5 px-2 rounded border text-center transition-colors cursor-pointer ${
-                          inquiryType === "drills" ? "bg-teal-600 text-white border-teal-500 font-semibold" : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                        }`}
-                      >
-                        Safety Training
-                      </button>
-                    </div>
-                  </div>
+                <div>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">WhatsApp / Phone</span>
+                  <a href="https://wa.me/6580627387" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-white hover:text-teal-400 block truncate">
+                    +65 8062 7387
+                  </a>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCopyToClipboard("+6580627387", "phone")}
+                className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer shrink-0 ml-2"
+                title="Copy number"
+              >
+                {copiedText === "phone" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
 
-                  <div>
-                    <label className="block text-zinc-400 mb-1">Your Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="e.g. John Doe / Project Manager"
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-zinc-200 focus:outline-none focus:border-teal-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-zinc-400 mb-1">Your Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="name@company.com"
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-zinc-200 focus:outline-none focus:border-teal-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-zinc-400 mb-1">Message Details</label>
-                    <textarea
-                      required
-                      rows={3}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Describe your inquiry or vacancy details..."
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-zinc-200 focus:outline-none focus:border-teal-500 resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2.5 rounded transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>{isSubmitting ? "Sending Inquiry..." : "Submit Inquiry"}</span>
-                  </button>
-                </form>
-              )}
+            <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded bg-blue-950 border border-blue-800 flex items-center justify-center shrink-0">
+                  <Linkedin className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">LinkedIn</span>
+                  <a href="https://linkedin.com/in/kazitonu" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-white hover:text-teal-400 block truncate">
+                    kazitonu
+                  </a>
+                </div>
+              </div>
+              <a
+                href="https://linkedin.com/in/kazitonu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer shrink-0 ml-2"
+                title="Visit LinkedIn"
+              >
+                <ArrowUpRight className="w-4 h-4" />
+              </a>
             </div>
           </div>
+
+          {copiedText && (
+            <div className="p-2 bg-emerald-950/80 border border-emerald-800 rounded text-xs text-emerald-400 text-center font-mono max-w-md mx-auto">
+              ✓ Copied {copiedText === "email" ? "email" : "phone number"} to clipboard
+            </div>
+          )}
         </section>
       </main>
 
