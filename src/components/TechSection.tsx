@@ -3,12 +3,11 @@ import { motion } from "motion/react";
 
 interface TechSectionProps {
   id: string;
-  moduleCode?: string;
   children: React.ReactNode;
   className?: string;
 }
 
-export const TechSection: React.FC<TechSectionProps> = ({ id, moduleCode, children, className = "" }) => {
+export const TechSection: React.FC<TechSectionProps> = ({ id, children, className = "" }) => {
   return (
     <motion.section
       id={id}
@@ -66,14 +65,6 @@ export const TechSection: React.FC<TechSectionProps> = ({ id, moduleCode, childr
         transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
       />
 
-      {/* Optional Top Right Module Badge Tag */}
-      {moduleCode && (
-        <div className="absolute top-3 right-4 hidden sm:flex items-center gap-1.5 font-mono text-[10px] text-teal-400/70 tracking-widest uppercase bg-teal-950/40 px-2 py-0.5 rounded border border-teal-800/40 pointer-events-none z-10">
-          <span className="w-1 h-1 rounded-full bg-teal-400 animate-ping" />
-          <span>{moduleCode}</span>
-        </div>
-      )}
-
       {children}
     </motion.section>
   );
@@ -83,10 +74,9 @@ interface TechHeaderProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  moduleCode?: string;
 }
 
-export const TechHeader: React.FC<TechHeaderProps> = ({ title, subtitle, icon, moduleCode }) => {
+export const TechHeader: React.FC<TechHeaderProps> = ({ title, subtitle, icon }) => {
   return (
     <motion.div 
       className="text-center space-y-2 relative"
@@ -95,13 +85,8 @@ export const TechHeader: React.FC<TechHeaderProps> = ({ title, subtitle, icon, m
       viewport={{ once: true }}
       transition={{ duration: 0.55, ease: "easeOut" }}
     >
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-950/80 border border-teal-800/80 text-teal-400 text-[10px] sm:text-xs font-mono tracking-widest uppercase mb-1 shadow-[0_0_12px_rgba(20,184,166,0.2)]">
-        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-        {icon && <span className="inline-block">{icon}</span>}
-        <span>{moduleCode ? `SYSTEM // ${moduleCode}` : "WSH SYSTEM MODULE"}</span>
-      </div>
-      
       <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-widest uppercase flex items-center justify-center gap-3">
+        {icon && <span className="inline-block text-teal-400">{icon}</span>}
         {title}
       </h2>
 
@@ -123,4 +108,5 @@ export const TechHeader: React.FC<TechHeaderProps> = ({ title, subtitle, icon, m
     </motion.div>
   );
 };
+
 

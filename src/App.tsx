@@ -54,7 +54,7 @@ export default function App() {
     };
   }, []);
 
-  const cvUrl = "https://res-console.cloudinary.com/dqtyuf02y/thumbnails/v1/image/upload/v1784887403/S2F6aV9Ub251X1VwZGF0ZWRfRm9ybWF0X0NWLnBkZl8yMDI2MDcwN18wMTE1NTZfMDAwMC5wZGZfMjAyNjA3MTNfMjM0NDQwXzAwMDBfcW9zczJo/as_is/Kazi_Tonu_Updated_Format_CV.pdf_20260707_011556_0000.pdf_20260713_234440_0000_qoss2h";
+  const cvUrl = "https://drive.google.com/file/d/1Gq8-4htQksUC_7xIKiOkxtJC25Q96ySf/view?usp=sharing";
 
   const handleDownloadCV = () => {
     window.open(cvUrl, "_blank", "noopener,noreferrer");
@@ -404,7 +404,7 @@ export default function App() {
           </nav>
 
           {/* Hamburger Menu Toggle for Mobile */}
-          <div className="flex items-center space-x-4">
+          <div className="md:hidden flex items-center space-x-4">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-zinc-300 hover:text-white transition-colors cursor-pointer p-1"
@@ -533,9 +533,9 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 lg:px-8 py-12 space-y-16 relative">
 
         {/* ABOUT ME Section matching reference image */}
-        <TechSection id="summary" moduleCode="01 // SUMMARY" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-10 shadow-2xl">
+        <TechSection id="summary" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-10 shadow-2xl">
           {/* Centered Heading with Underline */}
-          <TechHeader title="ABOUT ME" subtitle="Certified Workplace Safety & Health Professional with proven field expertise in Singapore." moduleCode="01 // SUMMARY" />
+          <TechHeader title="ABOUT ME" subtitle="Certified Workplace Safety & Health Professional with proven field expertise in Singapore." />
 
           {/* Two Column Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
@@ -547,9 +547,8 @@ export default function App() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="lg:col-span-6 space-y-6"
             >
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                <span>Howdy!</span>
-                <span className="text-xs font-mono px-2.5 py-1 rounded bg-teal-950 text-teal-400 border border-teal-800/80">WSH COORDINATOR</span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Howdy!
               </h3>
               <p className="text-sm sm:text-base text-zinc-300 font-normal leading-relaxed">
                 I am Kazi Tonu, a dedicated Workplace Safety and Health (WSH) Coordinator based in Singapore. Experienced in supervising high-risk construction activities, conducting thorough HIRA risk assessments, and ensuring full MOM regulatory compliance to maintain zero-incident workplaces.
@@ -601,8 +600,8 @@ export default function App() {
         </TechSection>
 
         {/* Work Experience Section matching reference image */}
-        <TechSection id="experience" moduleCode="02 // EXPERIENCE" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-12 shadow-2xl">
-          <TechHeader title="MY EXPERIENCE" subtitle="Proven track record in Singapore construction & engineering safety management." moduleCode="02 // EXPERIENCE" />
+        <TechSection id="experience" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-12 shadow-2xl">
+          <TechHeader title="MY EXPERIENCE" subtitle="Proven track record in Singapore construction & engineering safety management." />
 
           {/* Experience Grid - 2 Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 pt-4">
@@ -637,9 +636,8 @@ export default function App() {
                 </div>
 
                 <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
-                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight flex items-center gap-2">
-                    <span>WSH Coordinator</span>
-                    <span className="text-[10px] font-mono bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded">ACTIVE</span>
+                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+                    WSH Coordinator
                   </h3>
                   <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-normal">
                     Oversee daily site safety, enforce strict compliance with Singapore WSH laws and MOM regulations, conduct HIRA risk assessments, and lead toolbox briefings to maintain zero incidents.
@@ -754,7 +752,7 @@ export default function App() {
         </TechSection>
 
         {/* Certifications and Licenses Section */}
-        <TechSection id="certifications" moduleCode="03 // LICENSES" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
+        <TechSection id="certifications" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
             <div className="flex items-center space-x-2">
               <Award className="w-5 h-5 text-teal-400" />
@@ -847,7 +845,7 @@ export default function App() {
         </TechSection>
 
         {/* Specialized WSH Competencies */}
-        <TechSection id="competencies" moduleCode="04 // SERVICES" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
+        <TechSection id="competencies" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
           <div className="flex items-center space-x-2 border-b border-zinc-800 pb-4">
             <ShieldCheck className="w-5 h-5 text-teal-400" />
             <h2 className="text-xl font-bold text-white">Specialized WSH Competencies & Capabilities</h2>
@@ -903,7 +901,7 @@ export default function App() {
         </TechSection>
 
         {/* Contact Section */}
-        <TechSection id="contact" moduleCode="05 // CONTACT" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
+        <TechSection id="contact" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
           <div className="border-b border-zinc-800 pb-4 space-y-1">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
