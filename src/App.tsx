@@ -461,9 +461,6 @@ export default function App() {
           {/* Gradients to ensure crisp text contrast on the left & top header integration */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#181818] via-[#181818]/90 sm:via-[#181818]/70 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-[#181818]/60 lg:to-transparent" />
-          
-          {/* High-Tech Grid Accent */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
         </div>
 
         {/* Hero Content */}
