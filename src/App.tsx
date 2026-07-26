@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { TechSection, TechHeader } from "./components/TechSection";
 import { 
   FileText, 
   Mail, 
@@ -368,9 +370,9 @@ export default function App() {
           <a 
             href="#home" 
             onClick={(e) => scrollToSection(e, "home")}
-            className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-0.5 cursor-pointer"
+            className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-0.5 cursor-pointer group"
           >
-            Tonu<span className="text-[#E83E8C] font-black">.</span>
+            Tonu<span className="text-[#E83E8C] font-black group-hover:animate-ping inline-block">.</span>
           </a>
 
           {/* Desktop Navigation Links */}
@@ -382,13 +384,20 @@ export default function App() {
                   key={item.id}
                   href={`#${item.id}`}
                   onClick={(e) => scrollToSection(e, item.id)}
-                  className={`transition-all duration-200 py-1 cursor-pointer ${
+                  className={`relative transition-all duration-200 py-1 cursor-pointer ${
                     isActive 
-                      ? "text-white border-b-2 border-[#E83E8C] font-extrabold" 
+                      ? "text-white font-extrabold" 
                       : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   {item.label}
+                  {isActive && (
+                    <motion.span
+                      layoutId="activeNavIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E83E8C] rounded-full shadow-[0_0_8px_#E83E8C]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </a>
               );
             })}
@@ -407,32 +416,43 @@ export default function App() {
         </div>
 
         {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden pt-4 pb-2 border-t border-zinc-800/80 mt-3 flex flex-col space-y-3 text-xs font-bold tracking-widest uppercase">
-            {navItems.map((item) => {
-              const isActive = activeSection === item.id;
-              return (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={(e) => scrollToSection(e, item.id)}
-                  className={`py-1.5 transition-colors cursor-pointer ${
-                    isActive ? "text-[#E83E8C] font-black" : "text-zinc-300 hover:text-white"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-          </div>
-        )}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden pt-4 pb-2 border-t border-zinc-800/80 mt-3 flex flex-col space-y-3 text-xs font-bold tracking-widest uppercase overflow-hidden"
+            >
+              {navItems.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    onClick={(e) => scrollToSection(e, item.id)}
+                    className={`py-1.5 transition-colors cursor-pointer flex items-center gap-2 ${
+                      isActive ? "text-[#E83E8C] font-black" : "text-zinc-300 hover:text-white"
+                    }`}
+                  >
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#E83E8C]" />}
+                    {item.label}
+                  </a>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* HERO SECTION matching reference image with background photo */}
       <section id="home" className="relative min-h-[85vh] flex items-center overflow-hidden border-b border-zinc-800/40">
         {/* Background Image Layer */}
         <div className="absolute inset-0 z-0">
-          <img 
+          <motion.img 
+            initial={{ scale: 1.08, opacity: 0.8 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             src="https://res.cloudinary.com/dqtyuf02y/image/upload/v1784880279/1784880111834_edit_25916954757664_v5lhd8.png"
             alt="Kazi Tonu - WSH Coordinator"
             referrerPolicy="no-referrer"
@@ -441,115 +461,148 @@ export default function App() {
           {/* Gradients to ensure crisp text contrast on the left & top header integration */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#181818] via-[#181818]/90 sm:via-[#181818]/70 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-[#181818]/60 lg:to-transparent" />
+          
+          {/* High-Tech Grid Accent */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
         </div>
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-7xl mx-auto w-full px-6 lg:px-16 py-16">
-          <div className="max-w-2xl sm:max-w-xl lg:max-w-2xl space-y-5">
-            <p className="text-xs sm:text-sm font-bold tracking-[0.25em] text-zinc-300 uppercase drop-shadow-sm">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-2xl sm:max-w-xl lg:max-w-2xl space-y-5"
+          >
+            <motion.p 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xs sm:text-sm font-bold tracking-[0.25em] text-teal-400 uppercase drop-shadow-sm flex items-center gap-2"
+            >
+              <span className="w-2 h-2 rounded-full bg-teal-400 animate-ping inline-block" />
               HELLO, MY NAME IS
-            </p>
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none drop-shadow-md">
+            </motion.p>
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none drop-shadow-md"
+            >
               KAZI TONU
-            </h1>
-            <p className="text-sm sm:text-base text-zinc-300 font-normal leading-relaxed pt-1 drop-shadow">
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="text-sm sm:text-base text-zinc-300 font-normal leading-relaxed pt-1 drop-shadow"
+            >
               Workplace Safety and Health (WSH) Coordinator based in Singapore. Experienced in supervising high-risk construction activities, conducting HIRA risk assessments, and ensuring full MOM regulatory compliance to maintain zero-incident workplaces.
-            </p>
+            </motion.p>
 
-            <div className="pt-4">
-              <a 
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
+              className="pt-4 flex flex-wrap items-center gap-4"
+            >
+              <motion.a 
+                whileHover={{ scale: 1.04, boxShadow: "0 0 20px rgba(255,255,255,0.3)" }}
+                whileTap={{ scale: 0.96 }}
                 href="#experience" 
                 onClick={(e) => scrollToSection(e, "experience")}
-                className="inline-block bg-[#D6D6D6] hover:bg-white text-zinc-950 font-bold px-8 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-all duration-200 shadow-lg cursor-pointer"
+                className="inline-block bg-[#D6D6D6] hover:bg-white text-zinc-950 font-bold px-8 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-colors shadow-lg cursor-pointer"
               >
                 MY WORK
-              </a>
-            </div>
-          </div>
+              </motion.a>
+              <motion.a 
+                whileHover={{ scale: 1.04, borderColor: "#14b8a6" }}
+                whileTap={{ scale: 0.96 }}
+                href="#contact" 
+                onClick={(e) => scrollToSection(e, "contact")}
+                className="inline-block bg-zinc-900/80 hover:bg-zinc-800 text-teal-400 border border-zinc-700 font-bold px-6 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-colors shadow-lg cursor-pointer"
+              >
+                CONTACT ME
+              </motion.a>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-4 lg:px-8 py-12 space-y-16">
+      <main className="max-w-6xl mx-auto px-4 lg:px-8 py-12 space-y-16 relative">
 
         {/* ABOUT ME Section matching reference image */}
-        <section id="summary" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-10 shadow-2xl">
+        <TechSection id="summary" moduleCode="01 // SUMMARY" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-10 shadow-2xl">
           {/* Centered Heading with Underline */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-widest uppercase">
-              ABOUT ME
-            </h2>
-            <div className="flex items-center justify-center pt-1">
-              <div className="w-12 h-0.5 bg-zinc-300 rounded-full" />
-            </div>
-          </div>
+          <TechHeader title="ABOUT ME" subtitle="Certified Workplace Safety & Health Professional with proven field expertise in Singapore." moduleCode="01 // SUMMARY" />
 
           {/* Two Column Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             {/* Left Column: Greeting, Description & Download CV Button */}
-            <div className="lg:col-span-6 space-y-6">
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Howdy!
+            <motion.div 
+              initial={{ opacity: 0, x: -25 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="lg:col-span-6 space-y-6"
+            >
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                <span>Howdy!</span>
+                <span className="text-xs font-mono px-2.5 py-1 rounded bg-teal-950 text-teal-400 border border-teal-800/80">WSH COORDINATOR</span>
               </h3>
               <p className="text-sm sm:text-base text-zinc-300 font-normal leading-relaxed">
                 I am Kazi Tonu, a dedicated Workplace Safety and Health (WSH) Coordinator based in Singapore. Experienced in supervising high-risk construction activities, conducting thorough HIRA risk assessments, and ensuring full MOM regulatory compliance to maintain zero-incident workplaces.
               </p>
 
               <div className="pt-3">
-                <a 
+                <motion.a 
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 15px rgba(255, 255, 255, 0.2)" }}
+                  whileTap={{ scale: 0.96 }}
                   href={cvUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 bg-[#D6D6D6] hover:bg-white text-zinc-950 font-extrabold px-7 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-all duration-200 shadow-sm cursor-pointer active:scale-95"
+                  className="inline-flex items-center gap-2.5 bg-[#D6D6D6] hover:bg-white text-zinc-950 font-extrabold px-7 py-3.5 rounded text-xs sm:text-sm tracking-widest uppercase transition-all duration-200 shadow-sm cursor-pointer"
                 >
                   <span>DOWNLOAD MY CV</span>
                   <Download className="w-4 h-4" />
-                </a>
+                </motion.a>
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Column: Skill Proficiency Progress Bars */}
             <div ref={skillsRef} className="lg:col-span-6 space-y-6 pt-2 lg:pt-0">
               {aboutSkills.map((skill, index) => (
-                <div 
+                <motion.div 
                   key={index} 
-                  className={`space-y-2 transition-all duration-700 ease-out transform ${
-                    skillsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-                  }`}
-                  style={{ transitionDelay: `${index * 120}ms` }}
+                  initial={{ opacity: 0, x: 25 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="space-y-2"
                 >
                   <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white">
                     <span>{skill.label}</span>
-                    <span className="text-zinc-300 font-bold">{skill.percentage}%</span>
+                    <span className="text-teal-400 font-mono font-bold">{skill.percentage}%</span>
                   </div>
-                  <div className="relative w-full h-2 bg-zinc-700/80 rounded-full overflow-visible">
-                    <div 
-                      className="h-full bg-white rounded-full relative transition-all duration-1000 ease-out"
-                      style={{ 
-                        width: skillsVisible ? `${skill.percentage}%` : "0%",
-                        transitionDelay: `${index * 120 + 200}ms`
-                      }}
-                    >
-                      <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-zinc-900 rounded-full shadow-md" />
-                    </div>
+                  <div className="relative w-full h-2 bg-zinc-700/80 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-teal-500 to-emerald-400 rounded-full relative"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${skill.percentage}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: index * 0.1 + 0.2, ease: "easeOut" }}
+                    />
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
-        </section>
+        </TechSection>
 
         {/* Work Experience Section matching reference image */}
-        <section id="experience" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-12 shadow-2xl">
-          {/* Centered Heading with Underline */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-widest uppercase">
-              MY EXPERIENCE
-            </h2>
-            <div className="flex items-center justify-center pt-1">
-              <div className="w-12 h-0.5 bg-zinc-300 rounded-full" />
-            </div>
-          </div>
+        <TechSection id="experience" moduleCode="02 // EXPERIENCE" className="bg-[#212121] border border-zinc-800/80 rounded-2xl p-8 sm:p-12 lg:p-16 space-y-12 shadow-2xl">
+          <TechHeader title="MY EXPERIENCE" subtitle="Proven track record in Singapore construction & engineering safety management." moduleCode="02 // EXPERIENCE" />
 
           {/* Experience Grid - 2 Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 pt-4">
@@ -557,37 +610,53 @@ export default function App() {
             {/* Column 1: WSH Coordinator & Safety Supervisor */}
             <div className="space-y-10 sm:space-y-12">
               {/* Item 1 */}
-              <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+              <motion.div 
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="grid grid-cols-12 gap-3 sm:gap-4 items-start group"
+              >
                 <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight group-hover:text-teal-400 transition-colors">
                     Success Forever Construction and Maintenance Pte LTD
                   </h4>
-                  <p className="text-[11px] sm:text-xs font-mono text-zinc-400 pt-0.5">
+                  <p className="text-[11px] sm:text-xs font-mono text-teal-400/90 pt-0.5">
                     Dec 2023 - Present
                   </p>
                 </div>
 
                 <div className="col-span-1 flex flex-col items-center">
-                  <div className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md">
+                  <motion.div 
+                    whileHover={{ scale: 1.25 }}
+                    className="w-6 h-6 rounded-full bg-teal-500 text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-[0_0_12px_rgba(20,184,166,0.6)]"
+                  >
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
-                  <div className="w-px border-r-2 border-dashed border-zinc-600 h-28 my-2" />
+                  </motion.div>
+                  <div className="w-px border-r-2 border-dashed border-teal-500/40 h-28 my-2" />
                 </div>
 
                 <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
-                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
-                    WSH Coordinator
+                  <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight flex items-center gap-2">
+                    <span>WSH Coordinator</span>
+                    <span className="text-[10px] font-mono bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded">ACTIVE</span>
                   </h3>
                   <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-normal">
                     Oversee daily site safety, enforce strict compliance with Singapore WSH laws and MOM regulations, conduct HIRA risk assessments, and lead toolbox briefings to maintain zero incidents.
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Item 2 */}
-              <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+              <motion.div 
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="grid grid-cols-12 gap-3 sm:gap-4 items-start group"
+              >
                 <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight group-hover:text-teal-400 transition-colors">
                     Success Forever Construction and Maintenance Pte LTD
                   </h4>
                   <p className="text-[11px] sm:text-xs font-mono text-zinc-400 pt-0.5">
@@ -596,9 +665,12 @@ export default function App() {
                 </div>
 
                 <div className="col-span-1 flex flex-col items-center">
-                  <div className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md">
+                  <motion.div 
+                    whileHover={{ scale: 1.25 }}
+                    className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md"
+                  >
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
+                  </motion.div>
                 </div>
 
                 <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
@@ -609,15 +681,21 @@ export default function App() {
                     Supervised high-risk work-at-height activities aligning with MOM safety bylaws, operated hydraulic boom lifts, and conducted daily site hazard audits.
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Column 2: General Construction Worker */}
             <div className="space-y-10 sm:space-y-12">
               {/* Item 3 */}
-              <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+              <motion.div 
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="grid grid-cols-12 gap-3 sm:gap-4 items-start group"
+              >
                 <div className="col-span-4 sm:col-span-3 text-left sm:text-right space-y-0.5 pr-1">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-wide leading-tight group-hover:text-teal-400 transition-colors">
                     Success Forever Construction and Maintenance Pte LTD
                   </h4>
                   <p className="text-[11px] sm:text-xs font-mono text-zinc-400 pt-0.5">
@@ -626,9 +704,12 @@ export default function App() {
                 </div>
 
                 <div className="col-span-1 flex flex-col items-center">
-                  <div className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md">
+                  <motion.div 
+                    whileHover={{ scale: 1.25 }}
+                    className="w-6 h-6 rounded-full bg-white text-zinc-950 flex items-center justify-center font-bold shrink-0 shadow-md"
+                  >
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
+                  </motion.div>
                 </div>
 
                 <div className="col-span-7 sm:col-span-8 space-y-1.5 pl-1">
@@ -639,31 +720,41 @@ export default function App() {
                     Supported groundwork logistics, materials handling, site layout preparation, and equipment operations while mastering core workplace safety protocols.
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
           </div>
 
           {/* Education Subsection */}
-          <div className="pt-8 border-t border-zinc-800/80 space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="pt-8 border-t border-zinc-800/80 space-y-4"
+          >
             <div className="flex items-center space-x-2">
-              <GraduationCap className="w-5 h-5 text-white" />
+              <GraduationCap className="w-5 h-5 text-teal-400" />
               <h3 className="text-base sm:text-lg font-black text-white tracking-wide uppercase">Educational Background</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {resumeDetails.education.map((edu, eduIdx) => (
-                <div key={eduIdx} className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-xl space-y-1">
+                <motion.div 
+                  key={eduIdx} 
+                  whileHover={{ y: -4, borderColor: "rgba(20,184,166,0.5)" }}
+                  className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-xl space-y-1 transition-all"
+                >
                   <span className="text-xs font-bold text-white block">{edu.degree}</span>
                   <p className="text-xs text-zinc-400">{edu.institution}</p>
-                  <span className="text-[11px] font-mono text-zinc-400 block pt-1">{edu.period}</span>
-                </div>
+                  <span className="text-[11px] font-mono text-teal-400 block pt-1">{edu.period}</span>
+                </motion.div>
               ))}
             </div>
-          </div>
-        </section>
+          </motion.div>
+        </TechSection>
 
         {/* Certifications and Licenses Section */}
-        <section id="certifications" className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 lg:p-8 space-y-6">
+        <TechSection id="certifications" moduleCode="03 // LICENSES" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
             <div className="flex items-center space-x-2">
               <Award className="w-5 h-5 text-teal-400" />
@@ -674,9 +765,9 @@ export default function App() {
             <div className="flex flex-wrap gap-2 text-xs font-medium">
               <button
                 onClick={() => setCertFilter("all")}
-                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded border transition-all cursor-pointer ${
                   certFilter === "all"
-                    ? "bg-teal-600 text-white border-teal-500"
+                    ? "bg-teal-600 text-white border-teal-500 shadow-[0_0_12px_rgba(20,184,166,0.4)]"
                     : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
                 }`}
               >
@@ -684,9 +775,9 @@ export default function App() {
               </button>
               <button
                 onClick={() => setCertFilter("lifetime")}
-                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded border transition-all cursor-pointer ${
                   certFilter === "lifetime"
-                    ? "bg-teal-600 text-white border-teal-500"
+                    ? "bg-teal-600 text-white border-teal-500 shadow-[0_0_12px_rgba(20,184,166,0.4)]"
                     : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
                 }`}
               >
@@ -694,9 +785,9 @@ export default function App() {
               </button>
               <button
                 onClick={() => setCertFilter("valid")}
-                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded border transition-all cursor-pointer ${
                   certFilter === "valid"
-                    ? "bg-teal-600 text-white border-teal-500"
+                    ? "bg-teal-600 text-white border-teal-500 shadow-[0_0_12px_rgba(20,184,166,0.4)]"
                     : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
                 }`}
               >
@@ -704,9 +795,9 @@ export default function App() {
               </button>
               <button
                 onClick={() => setCertFilter("expiring")}
-                className={`px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded border transition-all cursor-pointer ${
                   certFilter === "expiring"
-                    ? "bg-amber-600 text-white border-amber-500"
+                    ? "bg-amber-600 text-white border-amber-500 shadow-[0_0_12px_rgba(217,119,6,0.4)]"
                     : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
                 }`}
               >
@@ -718,34 +809,45 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredCerts.map((cert) => {
-              const validity = getValidityDetails(cert.expiryDate);
-              return (
-                <div key={cert.title} className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg flex flex-col justify-between space-y-3">
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-white leading-snug">{cert.title}</h3>
-                      <span className="text-[11px] font-mono text-zinc-500 shrink-0">{cert.date}</span>
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AnimatePresence mode="popLayout">
+              {filteredCerts.map((cert) => {
+                const validity = getValidityDetails(cert.expiryDate);
+                return (
+                  <motion.div 
+                    layout
+                    key={cert.title} 
+                    initial={{ opacity: 0, scale: 0.92, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.92, y: -15 }}
+                    whileHover={{ y: -4, borderColor: "rgba(20, 184, 166, 0.5)", boxShadow: "0 10px 30px -10px rgba(20, 184, 166, 0.15)" }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg flex flex-col justify-between space-y-3 transition-colors"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-sm font-bold text-white leading-snug">{cert.title}</h3>
+                        <span className="text-[11px] font-mono text-zinc-500 shrink-0">{cert.date}</span>
+                      </div>
+
+                      <p className="text-xs font-semibold text-teal-400">{cert.authority}</p>
+                      <p className="text-xs text-zinc-400 leading-relaxed">{cert.description}</p>
                     </div>
 
-                    <p className="text-xs font-semibold text-teal-400">{cert.authority}</p>
-                    <p className="text-xs text-zinc-400 leading-relaxed">{cert.description}</p>
-                  </div>
-
-                  <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-end text-xs font-mono">
-                    <span className={`px-2 py-0.5 rounded border text-[10px] font-semibold ${validity.badgeColor}`}>
-                      {validity.labelText}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                    <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-end text-xs font-mono">
+                      <span className={`px-2 py-0.5 rounded border text-[10px] font-semibold ${validity.badgeColor}`}>
+                        {validity.labelText}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
+        </TechSection>
 
         {/* Specialized WSH Competencies */}
-        <section id="competencies" className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 lg:p-8 space-y-6">
+        <TechSection id="competencies" moduleCode="04 // SERVICES" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
           <div className="flex items-center space-x-2 border-b border-zinc-800 pb-4">
             <ShieldCheck className="w-5 h-5 text-teal-400" />
             <h2 className="text-xl font-bold text-white">Specialized WSH Competencies & Capabilities</h2>
@@ -753,18 +855,40 @@ export default function App() {
 
           <div className="space-y-4">
             {specializedSkillsList.map((skill, idx) => (
-              <div key={idx} className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg space-y-2">
+              <motion.div 
+                key={idx} 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                whileHover={{ borderColor: "rgba(20, 184, 166, 0.5)" }}
+                className="bg-zinc-950/80 border border-zinc-800 p-5 rounded-lg space-y-2.5 transition-colors"
+              >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <h3 className="text-sm font-bold text-white">{skill.name}</h3>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                    {skill.name}
+                  </h3>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono bg-zinc-800 text-teal-400 px-2 py-0.5 rounded border border-zinc-700">
                       {skill.metrics}
                     </span>
-                    <span className="text-xs font-mono text-zinc-400 font-bold">{skill.percentage}</span>
+                    <span className="text-xs font-mono text-zinc-300 font-bold">{skill.percentage}</span>
                   </div>
                 </div>
 
                 <p className="text-xs text-zinc-300 leading-relaxed">{skill.description}</p>
+
+                {/* Animated proficiency fill line */}
+                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-teal-500 rounded-full"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: skill.percentage }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: idx * 0.1 + 0.2 }}
+                  />
+                </div>
 
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {skill.aspects.map((aspect, aIdx) => (
@@ -773,20 +897,26 @@ export default function App() {
                     </span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </TechSection>
 
         {/* Contact Section */}
-        <section id="contact" className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 lg:p-8 space-y-6">
+        <TechSection id="contact" moduleCode="05 // CONTACT" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 lg:p-8 space-y-6">
           <div className="border-b border-zinc-800 pb-4 space-y-1">
-            <h2 className="text-xl font-bold text-white">Contact & Communication Channels</h2>
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Contact & Communication Channels
+            </h2>
             <p className="text-xs text-zinc-400">Direct contact details for recruitment, site audits, and official inquiries.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+            <motion.div 
+              whileHover={{ y: -3, borderColor: "rgba(20, 184, 166, 0.6)" }}
+              className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0">
                   <Mail className="w-5 h-5 text-teal-400" />
@@ -798,16 +928,20 @@ export default function App() {
                   </a>
                 </div>
               </div>
-              <button
+              <motion.button
+                whileTap={{ scale: 0.9 }}
                 onClick={() => handleCopyToClipboard("tonukazi@gmail.com", "email")}
                 className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer shrink-0 ml-2"
                 title="Copy email"
               >
                 {copiedText === "email" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
-            <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+            <motion.div 
+              whileHover={{ y: -3, borderColor: "rgba(16, 185, 129, 0.6)" }}
+              className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded bg-emerald-950 border border-emerald-800 flex items-center justify-center shrink-0">
                   <MessageCircle className="w-5 h-5 text-emerald-400" />
@@ -819,16 +953,20 @@ export default function App() {
                   </a>
                 </div>
               </div>
-              <button
+              <motion.button
+                whileTap={{ scale: 0.9 }}
                 onClick={() => handleCopyToClipboard("+6580627387", "phone")}
                 className="p-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors cursor-pointer shrink-0 ml-2"
                 title="Copy number"
               >
                 {copiedText === "phone" ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
-            <div className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between">
+            <motion.div 
+              whileHover={{ y: -3, borderColor: "rgba(59, 130, 246, 0.6)" }}
+              className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-lg flex items-center justify-between transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded bg-blue-950 border border-blue-800 flex items-center justify-center shrink-0">
                   <Linkedin className="w-5 h-5 text-blue-400" />
@@ -849,15 +987,22 @@ export default function App() {
               >
                 <ArrowUpRight className="w-4 h-4" />
               </a>
-            </div>
+            </motion.div>
           </div>
 
-          {copiedText && (
-            <div className="p-2 bg-emerald-950/80 border border-emerald-800 rounded text-xs text-emerald-400 text-center font-mono max-w-md mx-auto">
-              ✓ Copied {copiedText === "email" ? "email" : "phone number"} to clipboard
-            </div>
-          )}
-        </section>
+          <AnimatePresence>
+            {copiedText && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-2 bg-emerald-950/80 border border-emerald-800 rounded text-xs text-emerald-400 text-center font-mono max-w-md mx-auto"
+              >
+                ✓ Copied {copiedText === "email" ? "email" : "phone number"} to clipboard
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </TechSection>
       </main>
 
       {/* Footer */}
